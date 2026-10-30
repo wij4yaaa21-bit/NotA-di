@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NotA-di | Manajemen Terpadu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Pustaka MathLive -->
+    <script src="https://unpkg.com/mathlive"></script>
+
+    <style>
+        :root {
+            --bg-color: #f4f6f9; --text-main: #111827; --text-muted: #4b5563;
+            --primary: #2563eb; --primary-hover: #1d4ed8; --accent: #ea580c;
+            --card-bg: rgba(255, 255, 255, 0.95); --border: #cbd5e1; --pattern: #e2e8f0;
+            --danger: #dc2626; --success: #16a34a; --warning: #f59e0b;
+            --modal-bg: rgba(0, 0, 0, 0.5); --purple: #8b5cf6;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a; --text-main: #f8fafc; --text-muted: #94a3b8;
+            --primary: #3b82f6; --primary-hover: #60a5fa; --accent: #f97316;
+            --card-bg: rgba(30, 41, 59, 0.95); --border: #334155; --pattern: #1e293b;
+            --danger: #ef4444; --success: #22c55e; --warning: #fbbf24;
+            --modal-bg: rgba(0, 0, 0, 0.7); --purple: #a78bfa;
+        }
+
+        body {
+            margin: 0; font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color); background-image: radial-gradient(var(--pattern) 1px, transparent 1px);
+            background-size: 20px 20px; color: var(--text-main);
+            transition: all 0.3s ease; overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 { margin: 0; }
+        .title-font { font-family: 'Orbitron', sans-serif; letter-spacing: 2px; }
+        button { font-family: 'Poppins', sans-serif; cursor: pointer; border: none; border-radius: 6px; transition: 0.2s; outline: none; }
+
+        /* --- HALAMAN LOGIN --- */
+        #loginPage { 
+            display: flex; height: 100vh; width: 100vw; justify-content: center; align-items: center; 
+            background-image: url('login.jpg'); background-size: cover; background-position: center; position: relative;
+        }
+        #loginPage::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1; }
+        .login-box { 
+            background: var(--card-bg); padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            width: 100%; max-width: 380px; border: 1px solid var(--border); z-index: 2; backdrop-filter: blur(5px);
+        }
+        .login-box h1 { color: var(--primary); font-size: 2.8em; text-align: center; margin-bottom: 5px; }
+        .login-box p { text-align: center; color: var(--text-muted); margin-bottom: 25px; font-weight: 600; }
+        .login-box input { width: 100%; padding: 15px; margin-bottom: 20px; box-sizing: border-box; border: 2px solid var(--border); border-radius: 8px; background: var(--bg-color); color: var(--text-main); font-size: 1.1em; text-align: center;}
+        .login-box button { width: 100%; padding: 15px; background: var(--primary); color: white; font-weight: bold; font-size: 1.1em; border-radius: 8px;}
+        
+        /* --- APLIKASI UTAMA --- */
+        #mainApp { display: none; padding-bottom: 50px; }
+        header { background: var(--card-bg); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+        header .title-font { color: var(--primary); font-size: 1.8em; }
+        nav { display: flex; gap: 10px; flex-wrap: wrap; }
+        nav button { background: transparent; color: var(--text-main); padding: 8px 15px; font-weight: 600; border: 2px solid transparent; }
+        nav button:hover, nav button.active { border-color: var(--accent); color: var(--accent); }
+        .theme-btn { background: var(--text-main); color: var(--bg-color); padding: 8px 15px; font-weight: 600; }
+        
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9em; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; box-sizing: border-box; border: 2px solid var(--border); border-radius: 6px; background: var(--bg-color); color: var(--text-main); font-family: 'Poppins', sans-serif; }
+        [data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer;}
+        .btn-action { background: var(--accent); color: white; padding: 10px 20px; font-weight: 600; font-size: 1em; margin-top: 10px; width: 100%; }
+
+        .grid-pilihan { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .kartu-pilihan { background: var(--bg-color); border: 2px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; outline: none; }
+        .kartu-pilihan:hover, .kartu-pilihan:focus { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .kartu-pilihan h3 { margin-bottom: 10px; color: var(--text-main); }
+        .kartu-pilihan p { font-size: 0.85em; color: var(--text-muted); margin: 0; }
+        .sub-view { display: none; }
+        .sub-view.active { display: block; animation: fadeIn 0.4s ease; }
+        .btn-back { background: var(--text-muted); color: white; padding: 8px 15px; margin-bottom: 15px; display: inline-block; font-size: 0.9em; }
+
+        .task-item { background: var(--bg-color); border-left: 5px solid var(--primary); padding: 15px; margin-bottom: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .task-item.selesai { border-left-color: var(--success); opacity: 0.7; }
+        .task-info h3 { margin-bottom: 5px; font-size: 1.1em; display: flex; align-items: center; gap: 10px; }
+        .task-info p { margin: 0; font-size: 0.85em; color: var(--text-muted); }
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.7em; color: white; font-weight: bold; }
+        .badge-tugas { background: var(--primary); }
+        .badge-jadwal { background: var(--warning); }
+        .badge-alarm { background: var(--danger); }
+        .btn-success { background: var(--success); color: white; padding: 6px 12px; font-weight: 600;}
+        .btn-danger { background: var(--danger); color: white; padding: 6px 12px; font-weight: 600;}
+        .btn-eksport { background: var(--purple); color: white; padding: 4px 8px; font-size: 0.8em; margin-right: 5px;}
+
+        /* Mode Word Editor (WorD-i) */
+        .editor-toolbar { display: flex; gap: 5px; background: var(--bg-color); padding: 8px; border: 2px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; flex-wrap: wrap; align-items: center;}
+        .editor-toolbar button, .editor-toolbar select { padding: 6px 10px; background: var(--card-bg); border: 1px solid var(--border); font-weight: bold; color: var(--text-main); font-family: 'Poppins', sans-serif;}
+        .editor-toolbar button.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .editor-toolbar button:hover { background: var(--primary-hover); color: white; }
+        .rich-editor { width: 100%; min-height: 250px; padding: 15px; box-sizing: border-box; border: 2px solid var(--border); border-radius: 6px; background: var(--bg-color); color: var(--text-main); outline: none; line-height: 1.6;}
+        .math-render { vertical-align: middle; max-height: 3em; padding: 0 5px; }
+        [data-theme="dark"] .math-render { filter: invert(1) contrast(1.2) brightness(1.2); }
+
+        /* Arsip Catatan */
+        .catatan-item { background: var(--bg-color); border: 1px solid var(--primary); padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);}
+        .catatan-item h3 { margin-bottom: 2px; color: var(--primary); font-family: 'Orbitron', sans-serif;}
+        .catatan-isi-box { margin-top: 10px; padding: 15px; background: var(--card-bg); border-radius: 4px; overflow-x: auto; border: 1px solid var(--border); }
+        [data-theme="dark"] .catatan-isi-box * { color: var(--text-main) !important; background-color: transparent !important; }
+        .layer-preview-container { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; }
+        .layer-preview { width: 150px; height: auto; border: 1px solid var(--border); background: white; border-radius: 4px; }
+
+        /* Fullscreen Canvas Mode (KanvA-Di) */
+        #canvasFullscreen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #e2e8f0; z-index: 9999; overflow: hidden; }
+        #canvasArea { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #94a3b8; position: relative;}
+        #drawingCanvas { background: white; touch-action: none; max-width: 100%; max-height: 100%; object-fit: contain;}
+        #newtonOverlay { display: none; position: absolute; border: 2px dashed #ea580c; background: rgba(234, 88, 12, 0.1); pointer-events: none; z-index: 10000;}
+
+        /* Floating Toolbar Canvas */
+        #floatingToolbar {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--card-bg); padding: 10px 20px; border-radius: 30px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3); display: flex; gap: 15px; align-items: center;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10001; flex-wrap: wrap; justify-content: center; border: 2px solid var(--primary);
+        }
+        #floatingToolbar.hidden { top: -150px; }
+        .canvas-tools-group { display: flex; align-items: center; gap: 8px; border-right: 2px solid var(--border); padding-right: 15px;}
+        .canvas-tools-group:last-child { border-right: none; padding-right: 0;}
+        .tool-btn { padding: 8px 12px; background: var(--bg-color); border: 1px solid var(--border); font-weight: bold; color: var(--text-main); white-space: nowrap; border-radius: 20px; outline:none;}
+        .tool-btn.active { border-color: var(--primary); color: white; background: var(--primary); }
+        .slider-container { display: flex; flex-direction: column; align-items: center; font-size: 0.7em; font-weight: bold;}
+        .slider-container input { width: 70px; margin: 0; }
+        #btnToggleToolbar {
+            position: absolute; top: 20px; right: 20px; background: var(--primary); color: white;
+            padding: 10px 20px; border-radius: 30px; font-weight: bold; z-index: 10002; box-shadow: 0 4px 10px rgba(0,0,0,0.3); outline:none;
+        }
+
+        /* Profil Stats & Pengembang */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 20px; }
+        .stat-box { background: var(--bg-color); padding: 15px; text-align: center; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
+        .stat-box h2 { font-size: 2.2em; margin: 5px 0; }
+        .stat-box p { font-size: 0.8em; margin: 0; font-weight: 600; color: var(--text-muted);}
+        .dev-profil { background: linear-gradient(135deg, var(--primary), var(--accent)); padding: 6px; border-radius: 50%; display: inline-block; margin-bottom: 15px;}
+        .dev-profil img { width: 150px; height: 150px; border-radius: 50%; background: var(--border); object-fit: cover; border: 4px solid var(--card-bg); display: block;}
+        
+        /* Modal & Print Helpers */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 10005; justify-content: center; align-items: center; }
+        .modal-box { background: var(--card-bg); padding: 30px; border-radius: 12px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid var(--border); animation: popUp 0.3s ease; }
+        @keyframes popUp { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .modal-title { font-size: 1.5em; font-weight: bold; margin-bottom: 10px; }
+        .modal-text { color: var(--text-muted); margin-bottom: 20px; font-size: 0.9em; }
+        .modal-actions { display: flex; justify-content: center; gap: 10px; }
+        .modal-btn { padding: 10px 20px; font-weight: bold; font-size: 1em; }
+        .modal-btn-primary { background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .modal-btn-cancel { background: var(--text-muted); color: white; border: none; border-radius: 6px; cursor: pointer;}
+
+        /* Toolbar Matematika & Panduan Shortcut */
+        .math-simbol-toolbar {
+            display: flex; gap: 5px; flex-wrap: wrap; justify-content: center;
+            background: var(--bg-color); padding: 10px; border-radius: 8px;
+            border: 1px solid var(--border); margin-bottom: 15px;
+        }
+        .math-simbol-toolbar button, .math-simbol-toolbar select {
+            background: var(--card-bg); border: 1px solid var(--border);
+            padding: 5px 10px; font-size: 1.1em; border-radius: 4px; color: var(--text-main);
+        }
+        .math-simbol-toolbar button:hover { background: var(--primary); color: white; }
+        .math-kategori { width: 100%; text-align: left; font-size: 0.75em; font-weight: bold; color: var(--text-muted); margin-top: 5px; border-bottom: 1px solid var(--border); }
+        
+        .shortcut-guide {
+            background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px;
+            padding: 10px; text-align: left; margin-bottom: 15px; max-height: 260px; overflow-y: auto;
+        }
+        .shortcut-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.8em; color: var(--text-main); }
+        .shortcut-grid div { padding: 4px; border-bottom: 1px solid #ddd; }
+        .shortcut-grid b { color: var(--primary); }
+        
+        .spinner { width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; left: 0; top: 0; width: 100%; color: black; background: white;} .btn-eksport, .btn-danger, nav, header { display: none !important; } }
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 15px; } nav { justify-content: center; }
+            #floatingToolbar { width: 90%; padding: 10px; gap: 10px; border-radius: 15px; top: 70px; }
+            #floatingToolbar.hidden { top: -200px; }
+            .canvas-tools-group { padding-right: 5px; gap: 5px; }
+            .tool-btn { padding: 6px 8px; font-size: 0.85em;}
+        }
+
+        /* ---- Penyesuaian HP: keyboard rumus & panel media ---- */
+        .ML__keyboard, math-virtual-keyboard { z-index: 100000 !important; }
+        #mathModal { align-items: flex-start; overflow-y: auto; padding: 16px 0; }
+        #mathModal .modal-box { margin: auto; }
+        #mathFieldEditor { touch-action: manipulation; }
+        .media-panel { margin-top: 30px; background: var(--bg-color); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+        .media-baris { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .media-aksi { display: flex; gap: 6px; flex-wrap: wrap; }
+        .media-aksi button { margin: 0; }
+        .media-status { font-size: 0.8em; color: var(--text-muted); font-weight: 600; }
+        @media (max-width: 480px) {
+            .modal-box { padding: 20px; }
+            .media-aksi button { font-size: 0.8em; padding: 5px 8px; }
+        }
+    </style>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="NotA-di">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script id="na-embed">window.NA_EMBED = {};</script>
+</head>
+<body>
+
+    <audio id="clickSound" src="click.mp3" preload="auto"></audio>
+    <audio id="musikLatar" loop preload="none"></audio>
+    <input type="file" id="inputFotoUser" accept="image/*" style="display:none;" onchange="unggahMedia(this, 'foto')">
+    <input type="file" id="inputMusikUser" accept="audio/*" style="display:none;" onchange="unggahMedia(this, 'musik')">
+    <input type="file" id="inputKlikUser" accept="audio/*" style="display:none;" onchange="unggahMedia(this, 'klik')">
+    <!-- Hidden Inputs for Image Uploading -->
+    <input type="file" id="wordImageInput" accept="image/*" style="display:none;" onchange="prosesGambarWord(this)">
+    <input type="file" id="canvasImageInput" accept="image/*" style="display:none;" onchange="prosesGambarCanvas(this)">
+
+    <div id="loadingScreen" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-color); z-index:10000; justify-content:center; align-items:center; flex-direction:column;">
+        <div class="spinner"></div>
+        <h2 style="color:var(--primary); margin-top:20px; font-family:'Orbitron', sans-serif;">Memuat Ruang Kerja...</h2>
+    </div>
+
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-box">
+            <div id="modalTitle" class="modal-title">Judul</div>
+            <div id="modalText" class="modal-text">Teks Deskripsi</div>
+            <div id="modalActions" class="modal-actions"></div>
+        </div>
+    </div>
+
+    <!-- Modal Editor Matematika Cerdas -->
+    <div id="mathModal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 700px; width: 95%;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 class="modal-title" style="color: var(--warning); margin:0;">Editor Rumus</h2>
+                <select id="mathSizeSelect" class="modal-btn" style="background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border); padding: 5px;">
+                    <option value="\normalsize">Normal</option>
+                    <option value="\large">Besar</option>
+                    <option value="\LARGE" selected>Sangat Besar</option>
+                    <option value="\Huge">Raksasa</option>
+                </select>
+            </div>
+            
+            <p class="modal-text" style="font-size: 0.85em; text-align: left; margin-top: 10px; margin-bottom: 10px;">
+                Pilih simbol, atau <b>ketik kata kunci</b> langsung di kotak (misal: "alpha"). <br>Gunakan panah keyboard (⬅ ➡) untuk berpindah.
+            </p>
+            
+            <details class="shortcut-guide">
+                <summary style="font-weight: bold; cursor: pointer; color: var(--primary); padding-bottom:5px;">📚 Tampilkan Kamus Ketik-Cepat (Lengkap)</summary>
+                <div class="shortcut-grid">
+                    <div style="grid-column: span 2; margin-top: 8px;"><b>Dasar</b></div>
+                    <div><b>kali</b> ➔ ×</div>
+                    <div><b>bagi</b> ➔ ÷</div>
+                    <div><b>pm</b> ➔ ±</div>
+                    <div><b>mp</b> ➔ ∓</div>
+                    <div><b>titik</b> ➔ · (kali titik)</div>
+                    <div><b>tidak</b> ➔ ≠</div>
+                    <div><b>kirakira</b> ➔ ≈</div>
+                    <div><b>identik</b> ➔ ≡</div>
+                    <div><b>sebanding</b> ➔ ∝</div>
+                    <div><b>kurangdari</b> ➔ ≤</div>
+                    <div><b>lebihdari</b> ➔ ≥</div>
+                    <div><b>jauhkecil</b> ➔ ≪</div>
+                    <div><b>jauhbesar</b> ➔ ≫</div>
+                    <div><b>derajat</b> ➔ °</div>
+                    <div><b>inf</b> ➔ ∞</div>
+                    <div><b>takhingga</b> ➔ ∞</div>
+                    <div style="grid-column: span 2; margin-top: 8px;"><b>Bentuk & Tanda Kurung</b></div>
+                    <div><b>per</b> ➔ pecahan x/y</div>
+                    <div><b>akar</b> ➔ akar √</div>
+                    <div><b>akpn</b> ➔ akar pangkat n</div>
+                    <div><b>pangkat</b> ➔ pangkat xⁿ</div>
+                    <div><b>kuadrat</b> ➔ x²</div>
+                    <div><b>kubik</b> ➔ x³</div>
+                    <div><b>sub</b> ➔ subskrip xₙ</div>
+                    <div><b>absolut</b> ➔ |x| nilai mutlak</div>
+                    <div><b>kurung</b> ➔ ( ) besar</div>
+                    <div><b>siku</b> ➔ [ ] besar</div>
+                    <div><b>kurawal</b> ➔ { } besar</div>
+                    <div><b>teks</b> ➔ teks biasa di dalam rumus</div>
+                    <div><b>matriks</b> ➔ matriks 2×2</div>
+                    <div style="grid-column: span 2; margin-top: 8px;"><b>Kalkulus</b></div>
+                    <div><b>int</b> ➔ ∫</div>
+                    <div><b>itgbatas</b> ➔ ∫ dengan batas</div>
+                    <div><b>itgganda</b> ➔ ∬</div>
+                    <div><b>itglingkar</b> ➔ ∮</div>
+                    <div><b>lim</b> ➔ limit</div>
+                    <div><b>sum</b> ➔ ∑ (sigma besar)</div>
+                    <div><b>jmlbatas</b> ➔ ∑ dengan batas</div>
+                    <div><b>prod</b> ➔ ∏</div>
+                    <div><b>turunan</b> ➔ d/dx</div>
+                    <div><b>turdua</b> ➔ d²/dx²</div>
+                    <div><b>parsial</b> ➔ ∂/∂x</div>
+                    <div><b>partial</b> ➔ ∂</div>
+                    <div><b>nabla</b> ➔ ∇</div>
+                    <div style="grid-column: span 2; margin-top: 8px;"><b>Vektor & Aksen</b></div>
+                    <div><b>vektor</b> ➔ vektor (panah)</div>
+                    <div><b>vecsat</b> ➔ vektor satuan (topi)</div>
+                    <div><b>garis</b> ➔ garis di atas</div>
+                    <div><b>dotsatu</b> ➔ turunan waktu (ẋ)</div>
+                    <div><b>dotdua</b> ➔ turunan waktu dua kali (ẍ)</div>
+                    <div style="grid-column: span 2; margin-top: 8px;"><b>Panah & Logika</b></div>
+                    <div><b>panah</b> ➔ →</div>
+                    <div><b>kiri</b> ➔ ←</div>
+                    <div><b>duaarah</b> ➔ ↔</div>
+                    <div><b>jadi</b> ➔ ⇒</div>
+                    <div><b>ekiv</b> ➔ ⇔</div>
+                    <div style="grid-column: span 2; margin-top: 8px;"><b>Fisika</b></div>
+                    <div><b>resultan</b> ➔ ΣF</div>
+                    <div><b>dltx</b> ➔ Δx</div>
+                    <div><b>dltt</b> ➔ Δt</div>
+                    <div><b>dltv</b> ➔ Δv</div>
+                    <div><b>ohm</b> ➔ Ω</div>
+                    <div><b>hbar</b> ➔ ħ</div>
+                    <div><b>kecsat</b> ➔ m/s</div>
+                    <div><b>aksat</b> ➔ m/s²</div>
+                    <div style="grid-column: span 2; margin-top: 8px;"><b>Yunani Kecil</b></div>
+                    <div><b>alpha</b> ➔ α</div>
+                    <div><b>beta</b> ➔ β</div>
+                    <div><b>gamma</b> ➔ γ</div>
+                    <div><b>delta</b> ➔ δ</div>
+                    <div><b>eps</b> ➔ ε</div>
+                    <div><b>zeta</b> ➔ ζ</div>
+                    <div><b>eta</b> ➔ η</div>
+                    <div><b>theta</b> ➔ θ</div>
+                    <div><b>teta</b> ➔ θ</div>
+                    <div><b>iota</b> ➔ ι</div>
+                    <div><b>kappa</b> ➔ κ</div>
+                    <div><b>lambda</b> ➔ λ</div>
+                    <div><b>mu</b> ➔ μ</div>
+                    <div><b>nu</b> ➔ ν</div>
+                    <div><b>xi</b> ➔ ξ</div>
+                    <div><b>pi</b> ➔ π</div>
+                    <div><b>rho</b> ➔ ρ</div>
+                    <div><b>sigma</b> ➔ σ (sigma kecil)</div>
+                    <div><b>tau</b> ➔ τ</div>
+                    <div><b>ups</b> ➔ υ</div>
+                    <div><b>phi</b> ➔ φ</div>
+                    <div><b>vfi</b> ➔ ϕ (varian)</div>
+                    <div><b>chi</b> ➔ χ</div>
+                    <div><b>psi</b> ➔ ψ</div>
+                    <div><b>omega</b> ➔ ω</div>
+                    <div style="grid-column: span 2; margin-top: 8px;"><b>Yunani Kapital (awali huruf besar)</b></div>
+                    <div><b>Gamma</b> ➔ Γ</div>
+                    <div><b>Delta</b> ➔ Δ</div>
+                    <div><b>Theta</b> ➔ Θ</div>
+                    <div><b>Lambda</b> ➔ Λ</div>
+                    <div><b>Xi</b> ➔ Ξ</div>
+                    <div><b>Pi</b> ➔ Π</div>
+                    <div><b>Sigma</b> ➔ Σ</div>
+                    <div><b>Ups</b> ➔ Υ</div>
+                    <div><b>Phi</b> ➔ Φ</div>
+                    <div><b>Psi</b> ➔ Ψ</div>
+                    <div><b>Omega</b> ➔ Ω</div>
+                </div>
+            </details>
+
+            <div class="math-simbol-toolbar">
+                <button onclick="sisipMath('\\frac{#?}{#?}')">x/y</button>
+                <button onclick="sisipMath('^{#?}')">x²</button>
+                <button onclick="sisipMath('\\sqrt{#?}')">√</button>
+                <button onclick="sisipMath('\\int')">∫</button>
+                <button onclick="sisipMath('\\sum')">∑</button>
+                <button onclick="sisipMath('\\lim_{#? \\to #?}')">lim</button>
+                <button onclick="sisipMath('\\infty')">∞</button>
+                <button onclick="sisipMath('\\alpha')">α</button>
+                <button onclick="sisipMath('\\beta')">β</button>
+                <button onclick="sisipMath('\\theta')">θ</button>
+                <button onclick="sisipMath('\\pi')">π</button>
+                <button onclick="sisipMath('\\Delta')">Δ</button>
+                <button onclick="sisipMath('\\;')" title="Spasi (juga bisa pakai tombol Spasi)">␣ Spasi</button>
+                <button onclick="sisipMath('\\quad')" title="Spasi lebar">⇥ Spasi Lebar</button>
+            </div>
+
+            <!-- TABINDEX 0 SUPER PENTING BIAR BISA FOKUS DI LAPTOP -->
+            <math-field id="mathFieldEditor" tabindex="0" style="font-size: 1.5em; width: 100%; border: 2px solid var(--border); border-radius: 8px; padding: 15px; background: white; color: black; outline: none;"></math-field>
+            
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button class="modal-btn modal-btn-cancel" onclick="tutupMathModal()">Batal</button>
+                <button class="modal-btn modal-btn-primary" onclick="konfirmasiMathModal()">Sisipkan Rumus</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="printArea" style="display: none; padding: 40px; background: white; color: black;"></div>
+
+    <div id="loginPage">
+        <div class="login-box">
+            <h1 class="title-font">NotA-di</h1>
+            <p>Portal Manajemen Terpadu</p>
+            <input type="text" id="inputNama" placeholder="Ketik nama Anda di sini..." autocomplete="off">
+            <button onclick="masukApp()">MULAI SESI</button>
+        </div>
+    </div>
+
+    <div id="mainApp">
+        <header>
+            <div class="title-font">NotA-di</div>
+            <nav id="navMenu">
+                <button class="active" onclick="bukaTab('tab-info', this)">Beranda</button>
+                <button onclick="bukaTab('tab-buat', this)">Pengingat</button>
+                <button onclick="bukaTab('tab-catatan', this)">Catatan</button>
+                <button onclick="bukaTab('tab-profil', this)">Profil</button>
+                <button onclick="bukaTab('tab-dev', this)">Pengembang</button>
+            </nav>
+            <button class="theme-btn" onclick="toggleTheme()">🌓 Tema</button>
+        </header>
+
+        <div class="container">
+            <div id="tab-info" class="tab-content active card">
+                <h2>Selamat Datang, <span id="displayNamaUser" style="color: var(--accent);"></span>! 👋</h2>
+                <p style="margin-top: 15px; color: var(--text-muted); line-height: 1.6;">
+                    NotA-di dirancang untuk membantu produktivitas harianmu secara efisien.<br><br>
+                    Notifikasi latar belakang berjalan pada: <strong>H-1 Hari, H-12 Jam, H-1 Jam, H-30 Menit, dan Saat Pelaksanaan.</strong>
+                </p>
+                <div style="margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                        <h3 style="color: var(--warning); margin-bottom: 10px; border-bottom: 2px solid var(--border); padding-bottom: 5px;">⏳ Pratinjau Tugas Aktif</h3>
+                        <div id="berandaTugasContainer"></div>
+                    </div>
+                    <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                        <h3 style="color: var(--primary); margin-bottom: 10px; border-bottom: 2px solid var(--border); padding-bottom: 5px;">📝 Catatan Terakhir</h3>
+                        <div id="berandaCatatanContainer"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-buat" class="tab-content card">
+                <div id="pilihanPengingatUtama" class="sub-view active">
+                    <h2>Pilih Jenis Entri</h2>
+                    <div class="grid-pilihan">
+                        <div class="kartu-pilihan" tabindex="0" onclick="bukaFormPengingat('Tugas')"><h3 style="color: var(--primary);">📝 Buat Tugas</h3><p>Tugas dengan deadline.</p></div>
+                        <div class="kartu-pilihan" tabindex="0" onclick="bukaFormPengingat('Jadwal')"><h3 style="color: var(--warning);">📅 Buat Jadwal</h3><p>Agenda kegiatan.</p></div>
+                        <div class="kartu-pilihan" tabindex="0" onclick="bukaFormPengingat('Alarm')"><h3 style="color: var(--danger);">⏰ Buat Alarm</h3><p>Pengingat waktu umum.</p></div>
+                    </div>
+                    <h3 style="margin-top: 40px; border-bottom: 2px solid var(--border); padding-bottom: 5px;">Daftar Pengingat Aktif</h3>
+                    <div id="wadahDaftarTugas" style="margin-top: 15px;"></div>
+                </div>
+
+                <div id="formPengingatBox" class="sub-view">
+                    <button class="btn-back" onclick="kembaliKePilihanPengingat()">← Kembali</button>
+                    <h2 id="judulFormPengingat">Buat Entri</h2>
+                    <input type="hidden" id="jenisPengingatAktif">
+                    <div class="form-group"><label id="labelNamaPengingat">Nama / Judul</label><input type="text" id="namaPengingatBaru"></div>
+                    <div class="form-group"><label id="labelWaktuPengingat">Waktu Target</label><input type="datetime-local" id="waktuPengingatBaru"></div>
+                    <button class="btn-action" onclick="simpanPengingatBaru()">Simpan ke Sistem</button>
+                </div>
+            </div>
+
+            <div id="tab-catatan" class="tab-content card">
+                <div id="pilihanCatatanUtama" class="sub-view active">
+                    <h2>Buat Ruang Kerja Baru</h2>
+                    <div class="grid-pilihan">
+                        <div class="kartu-pilihan" tabindex="0" onclick="bukaFormCatatan('word')">
+                            <h3 style="color: var(--primary); font-family:'Orbitron', sans-serif;">WorD-i</h3>
+                            <p>Pengolah kata terstruktur.</p>
+                            <button class="btn-eksport" style="margin-top:10px;background:var(--warning);" onclick="event.stopPropagation(); bukaArsipDanFilter('word')">✏️ Edit WorD-i Tersimpan</button>
+                        </div>
+                        <div class="kartu-pilihan" tabindex="0" onclick="bukaFormCatatan('canvas')">
+                            <h3 style="color: var(--purple); font-family:'Orbitron', sans-serif;">KanvA-Di</h3>
+                            <p>Kanvas pintar multi-layer.</p>
+                            <button class="btn-eksport" style="margin-top:10px;background:var(--warning);" onclick="event.stopPropagation(); bukaArsipDanFilter('canvas')">✏️ Edit KanvA-Di Tersimpan</button>
+                        </div>
+                    </div>
+                    <h3 id="judulArsipRuangKerja" style="margin-top: 40px; border-bottom: 2px solid var(--border); padding-bottom: 5px;">Arsip Ruang Kerja</h3>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+                        <button class="btn-eksport" style="background:var(--primary);" onclick="filterArsipCatatan('all')">Semua</button>
+                        <button class="btn-eksport" style="background:var(--primary);" onclick="filterArsipCatatan('word')">WorD-i</button>
+                        <button class="btn-eksport" style="background:var(--purple);" onclick="filterArsipCatatan('canvas')">KanvA-Di</button>
+                    </div>
+                    <div id="wadahCatatan" style="margin-top: 15px;"></div>
+                </div>
+
+                <!-- WorD-i -->
+                <div id="formCatatanWord" class="sub-view">
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 15px; align-items: center; gap: 10px;">
+                        <button class="btn-back" style="margin-bottom:0;" onclick="kembaliKePilihanCatatan()">← Kembali</button>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn-action" style="width: auto; margin: 0; background: var(--primary);" onclick="resetWordEditor()">✨ Lembar Baru</button>
+                            <button class="btn-action" style="width: auto; margin: 0; background: var(--success);" onclick="tambahKolomWord()">+ Tambah Kolom (Split)</button>
+                        </div>
+                    </div>
+                    <h2 class="title-font" style="color: var(--primary); margin-bottom: 15px;">WorD-i</h2>
+                    
+                    <div class="editor-toolbar">
+                        <select id="fontSelect" onchange="formatTeks('fontName', this.value)">
+                            <option value="Poppins">Font: Poppins</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                        </select>
+                        <select id="fontSizeSelect" onchange="formatTeks('fontSize', this.value)">
+                            <option value="3">Ukuran: Normal</option>
+                            <option value="1">Kecil (8pt)</option>
+                            <option value="2">Agak Kecil (10pt)</option>
+                            <option value="4">Besar (14pt)</option>
+                            <option value="5">Lebih Besar (18pt)</option>
+                            <option value="6">Sangat Besar (24pt)</option>
+                            <option value="7">Raksasa (36pt)</option>
+                        </select>
+                        
+                        <button id="btn-bold" onclick="formatTeks('bold')"><b>B</b></button>
+                        <button id="btn-italic" onclick="formatTeks('italic')"><i>I</i></button>
+                        <button id="btn-underline" onclick="formatTeks('underline')"><u>U</u></button>
+                        <button onclick="formatTeks('justifyLeft')" title="Rata kiri (Ctrl+L)">⯇ Kiri</button>
+                        <button onclick="formatTeks('justifyCenter')" title="Rata tengah (Ctrl+E)">☰ Tengah</button>
+                        <button onclick="formatTeks('justifyRight')" title="Rata kanan (Ctrl+R)">Kanan ⯈</button>
+                        <button onclick="formatTeks('justifyFull')" title="Rata kiri-kanan (Ctrl+J)">≣ Justify</button>
+                        
+                        <button onclick="formatListStyle('decimal')">1. List</button>
+                        <button onclick="formatListStyle('upper-alpha')">A. List</button>
+                        <button onclick="formatListStyle('lower-alpha')">a. List</button>
+                        <button onclick="formatTeks('insertUnorderedList')">• Titik</button>
+                        
+                        <button style="background: var(--success); color: white; border:none;" onclick="sisipGambarWord()" title="Ctrl+G">🖼️ Sisip Gambar</button>
+                        <button style="background: var(--warning); color: white; border:none;" onclick="bukaMathModal('word')" title="Alt+=">∑ Sisip Rumus</button>
+                    </div>
+                    
+                    <div id="wordPanelContainer" style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px;">
+                        <!-- Konten Editor masuk kesini -->
+                    </div>
+                    <button class="btn-action" onclick="simpanCatatanWord()">Simpan Dokumen WorD-i</button>
+                </div>
+
+                <!-- KanvA-Di -->
+                <div id="formCatatanCanvas" class="sub-view">
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 15px; align-items: center; gap: 10px;">
+                        <button class="btn-back" style="margin-bottom:0;" onclick="kembaliKePilihanCatatan()">← Kembali</button>
+                        <button class="btn-action" style="width: auto; margin: 0; background: var(--purple);" onclick="resetCanvasEditor()">✨ Kanvas Baru</button>
+                    </div>
+                    <h2 class="title-font" style="color: var(--purple); margin-bottom: 15px;">KanvA-Di</h2>
+                    <div class="form-group"><input type="text" id="canvasHead" placeholder="Judul Kanvas"></div>
+                    <div class="form-group"><input type="text" id="canvasSubjek" placeholder="Subjek / Keterangan"></div>
+                    <button class="btn-action" style="background: var(--purple);" onclick="bukaLayarPenuhCanvas()">Masuk Layar Penuh (Kanvas)</button>
+                    
+                    <div id="previewCanvasArea" style="display:none; margin-top: 20px;">
+                        <h4>Pratinjau Layer:</h4>
+                        <div id="previewLayers" class="layer-preview-container"></div>
+                        <button class="btn-action" onclick="simpanCatatanCanvas()">Simpan Arsip KanvA-Di</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-profil" class="tab-content card">
+                <div style="display: flex; align-items: center; gap: 20px; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; display: flex; justify-content: center; align-items: center; font-size: 3em; font-family: 'Orbitron', sans-serif; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" id="profilInisial">A</div>
+                    <div style="flex: 1;">
+                        <h2 style="margin: 0; color: var(--primary); font-size: 2em;" id="profilNamaLengkap">Nama</h2>
+                        <p style="margin: 5px 0 0 0; color: var(--text-muted); font-weight: 600;">Pengguna Aktif NotA-di</p>
+                        <button class="btn-action" style="background: var(--danger); width: auto; padding: 6px 15px; margin-top: 10px; font-size: 0.85em;" onclick="gantiNamaUser()">Keluar Akun</button>
+                    </div>
+                </div>
+                
+                <h3 style="color: var(--text-main); margin-bottom: 15px;">📊 Ringkasan Aktivitas</h3>
+                <div class="stats-grid">
+                    <div class="stat-box" style="border-top: 4px solid var(--primary);">
+                        <h2 id="statTugas">0</h2><p>Tugas</p>
+                    </div>
+                    <div class="stat-box" style="border-top: 4px solid var(--warning);">
+                        <h2 id="statJadwal" style="color:var(--warning);">0</h2><p>Jadwal</p>
+                    </div>
+                    <div class="stat-box" style="border-top: 4px solid var(--danger);">
+                        <h2 id="statAlarm" style="color:var(--danger);">0</h2><p>Alarm</p>
+                    </div>
+                    <div class="stat-box" style="border-top: 4px solid var(--purple);">
+                        <h2 id="statCatatan" style="color:var(--purple);">0</h2><p>Dokumen</p>
+                    </div>
+                </div>
+
+                <div class="media-panel">
+                    <h3 style="color: var(--text-main); margin-bottom: 6px;">🎨 Foto, Musik & Unduh untuk HP</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9em; line-height: 1.5; margin: 0 0 10px;">Foto dan musik yang kamu pasang di sini ikut tertanam ke dalam file HTML saat diunduh, jadi tetap berfungsi di HP tanpa file pendukung lain.</p>
+
+                    <div class="media-baris">
+                        <div><b>Foto profil</b><br><span class="media-status" id="statusFoto">-</span></div>
+                        <div class="media-aksi">
+                            <button class="btn-eksport" style="background:var(--primary);" onclick="document.getElementById('inputFotoUser').click()">📷 Pasang Foto</button>
+                            <button class="btn-eksport" style="background:var(--danger);" onclick="hapusMediaUser('foto')">Hapus</button>
+                        </div>
+                    </div>
+                    <div class="media-baris">
+                        <div><b>Musik latar</b><br><span class="media-status" id="statusMusik">-</span></div>
+                        <div class="media-aksi">
+                            <button class="btn-eksport" id="btnMusikToggle" style="background:var(--success);" onclick="toggleMusik()">▶ Putar</button>
+                            <button class="btn-eksport" style="background:var(--primary);" onclick="document.getElementById('inputMusikUser').click()">🎵 Pasang Musik</button>
+                            <button class="btn-eksport" style="background:var(--danger);" onclick="hapusMediaUser('musik')">Hapus</button>
+                        </div>
+                    </div>
+                    <div class="media-baris">
+                        <div><b>Suara klik</b><br><span class="media-status" id="statusKlik">-</span></div>
+                        <div class="media-aksi">
+                            <button class="btn-eksport" style="background:var(--primary);" onclick="document.getElementById('inputKlikUser').click()">🔊 Pasang Suara</button>
+                            <button class="btn-eksport" style="background:var(--danger);" onclick="hapusMediaUser('klik')">Hapus</button>
+                        </div>
+                    </div>
+
+                    <button class="btn-action" style="background: var(--success); margin-top: 15px;" onclick="unduhAplikasiHTML()">⬇ Unduh NotA-di (file HTML untuk HP)</button>
+                    <p style="color: var(--text-muted); font-size: 0.8em; margin: 8px 0 0; line-height: 1.5;">Buka file hasil unduhan dengan Chrome atau Safari di HP. Catatan dan tugas tidak ikut terunduh, karena setiap perangkat menyimpan datanya sendiri di browser.</p>
+                </div>
+            </div>
+
+            <div id="tab-dev" class="tab-content card" style="text-align: center;">
+                <div class="dev-profil"><img id="fotoPengembang" src="Kurnia Adi Wijaya.jpeg" alt="Kurnia Adi Wijaya"></div>
+                <h2 style="color: var(--primary);">Kurnia Adi Wijaya</h2>
+                <p style="font-weight: 600; margin-bottom: 5px;">Mahasiswa S1 Pendidikan Fisika - Untirta</p>
+                <p style="color: var(--text-muted); font-size: 0.95em; margin-bottom: 25px;">Email: <a href="mailto:adiwjy44611@gmail.com" style="color: var(--primary); text-decoration: none;">adiwjy44611@gmail.com</a></p>
+                
+                <div style="text-align: left; background: var(--bg-color); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+                    <h3 style="color: var(--text-main); margin-bottom: 10px;">Tentang Aplikasi Ini</h3>
+                    <p style="line-height: 1.6; color: var(--text-muted); font-size: 0.95em; margin: 0;">
+                        <strong>NotA-di</strong> adalah portal manajemen terpadu yang dirancang untuk mengoptimalkan produktivitas pribadi. Aplikasi ini berfungsi untuk mencatat, menjadwalkan, dan mengingatkan berbagai kegiatan (Tugas, Jadwal, Alarm) secara presisi dengan sistem notifikasi berlapis. Selain itu, NotA-di menyediakan ruang kerja digital berupa pengolah kata terstruktur (WorD-i) dan kanvas pintar (KanvA-Di) untuk menuangkan ide, menyisipkan referensi gambar, serta merumuskan pemecahan masalah matematis menggunakan editor cerdas yang terintegrasi.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULLSCREEN CANVAS (KanvA-Di) -->
+    <div id="canvasFullscreen">
+        <button id="btnToggleToolbar" onclick="toggleCanvasMenu()">🛠️ Alat Kanvas</button>
+        
+        <div id="floatingToolbar">
+            <div class="canvas-tools-group">
+                <button class="tool-btn active" id="btnPen" onclick="setModeAlat('pen')">✏️ Pena</button>
+                <button class="tool-btn" id="btnPencil" onclick="setModeAlat('pencil')">📝 Pensil</button>
+                <button class="tool-btn" id="btnBrush" onclick="setModeAlat('brush')">🖌️ Kuas</button>
+                <button class="tool-btn" id="btnNewton" onclick="setModeAlat('newton')" style="border-color: var(--warning); color: var(--warning);">∑ Pena Newton</button>
+                <button class="tool-btn" onclick="sisipGambarCanvas()" style="border-color: var(--success); color: var(--success);">🖼️ Sisip Gambar</button>
+                <button class="tool-btn" id="btnEraser" onclick="setModeAlat('eraser')">🧽 Hapus</button>
+            </div>
+            
+            <div class="canvas-tools-group">
+                <div class="slider-container">Tebal<input type="range" id="ukuranAlat" min="1" max="50" value="3" onchange="updateUkuranAlat()"></div>
+                <input type="color" id="warnaPena" value="#000000" onchange="updateWarnaTinta()">
+            </div>
+            
+            <div class="canvas-tools-group">
+                <button class="tool-btn" onclick="navigasiLayer(-1)">◀</button>
+                <span style="font-weight:bold; font-size:0.9em; min-width:40px; text-align:center;" id="infoLayer">1/1</span>
+                <button class="tool-btn" onclick="navigasiLayer(1)">▶</button>
+                <button class="tool-btn" style="background:var(--success); color:white;" onclick="tambahLayerBaru()">+ Layer</button>
+            </div>
+            
+            <button class="tool-btn" style="background:var(--danger); color:white;" onclick="keluarLayarPenuh()">✖ Selesai</button>
+        </div>
+        
+        <div id="canvasArea"><canvas id="drawingCanvas"></canvas><div id="newtonOverlay"></div></div>
+    </div>
+
+    <script>
+        // --- INISIALISASI SHORTCUT MATHLIVE (KETIK-UBAH CEPAT YUNANI LENGKAP) ---
+        customElements.whenDefined('math-field').then(() => {
+            const mf = document.getElementById('mathFieldEditor');
+            mf.inlineShortcuts = {
+                ...mf.inlineShortcuts,
+                // Dasar
+                "kali": "\\times",
+                "bagi": "\\div",
+                "pm": "\\pm",
+                "mp": "\\mp",
+                "titik": "\\cdot",
+                "tidak": "\\neq",
+                "kirakira": "\\approx",
+                "identik": "\\equiv",
+                "sebanding": "\\propto",
+                "kurangdari": "\\leq",
+                "lebihdari": "\\geq",
+                "jauhkecil": "\\ll",
+                "jauhbesar": "\\gg",
+                "derajat": "^{\\circ}",
+                "inf": "\\infty",
+                "takhingga": "\\infty",
+                // Bentuk & Tanda Kurung
+                "per": "\\frac{#?}{#?}",
+                "akar": "\\sqrt{#?}",
+                "akpn": "\\sqrt[#?]{#?}",
+                "pangkat": "^{#?}",
+                "kuadrat": "^{2}",
+                "kubik": "^{3}",
+                "sub": "_{#?}",
+                "absolut": "\\left|#?\\right|",
+                "kurung": "\\left(#?\\right)",
+                "siku": "\\left[#?\\right]",
+                "kurawal": "\\left\\{#?\\right\\}",
+                "teks": "\\text{#?}",
+                "matriks": "\\begin{pmatrix} #? & #? \\\\ #? & #? \\end{pmatrix}",
+                // Kalkulus
+                "int": "\\int",
+                "itgbatas": "\\int_{#?}^{#?}",
+                "itgganda": "\\iint",
+                "itglingkar": "\\oint",
+                "lim": "\\lim_{#? \\to #?}",
+                "sum": "\\sum",
+                "jmlbatas": "\\sum_{#?}^{#?}",
+                "prod": "\\prod",
+                "turunan": "\\frac{d}{dx}",
+                "turdua": "\\frac{d^{2}}{dx^{2}}",
+                "parsial": "\\frac{\\partial #?}{\\partial #?}",
+                "partial": "\\partial",
+                "nabla": "\\nabla",
+                // Vektor & Aksen
+                "vektor": "\\vec{#?}",
+                "vecsat": "\\hat{#?}",
+                "garis": "\\overline{#?}",
+                "dotsatu": "\\overset{\\cdot}{#?}",
+                "dotdua": "\\overset{\\cdot\\cdot}{#?}",
+                // Panah & Logika
+                "panah": "\\rightarrow",
+                "kiri": "\\leftarrow",
+                "duaarah": "\\leftrightarrow",
+                "jadi": "\\Rightarrow",
+                "ekiv": "\\Leftrightarrow",
+                // Fisika
+                "resultan": "\\Sigma F",
+                "dltx": "\\Delta x",
+                "dltt": "\\Delta t",
+                "dltv": "\\Delta v",
+                "ohm": "\\Omega",
+                "hbar": "\\hbar",
+                "kecsat": "\\text{m/s}",
+                "aksat": "\\text{m/s}^{2}",
+                // Yunani Kecil
+                "alpha": "\\alpha",
+                "beta": "\\beta",
+                "gamma": "\\gamma",
+                "delta": "\\delta",
+                "eps": "\\epsilon",
+                "zeta": "\\zeta",
+                "eta": "\\eta",
+                "theta": "\\theta",
+                "teta": "\\theta",
+                "iota": "\\iota",
+                "kappa": "\\kappa",
+                "lambda": "\\lambda",
+                "mu": "\\mu",
+                "nu": "\\nu",
+                "xi": "\\xi",
+                "pi": "\\pi",
+                "rho": "\\rho",
+                "sigma": "\\sigma",
+                "tau": "\\tau",
+                "ups": "\\upsilon",
+                "phi": "\\phi",
+                "vfi": "\\varphi",
+                "chi": "\\chi",
+                "psi": "\\psi",
+                "omega": "\\omega",
+                // Yunani Kapital (awali huruf besar)
+                "Gamma": "\\Gamma",
+                "Delta": "\\Delta",
+                "Theta": "\\Theta",
+                "Lambda": "\\Lambda",
+                "Xi": "\\Xi",
+                "Pi": "\\Pi",
+                "Sigma": "\\Sigma",
+                "Ups": "\\Upsilon",
+                "Phi": "\\Phi",
+                "Psi": "\\Psi",
+                "Omega": "\\Omega"
+            };
+        });
+
+        // --- SPASI DI EDITOR RUMUS ---
+        customElements.whenDefined('math-field').then(() => {
+            document.getElementById('mathFieldEditor').addEventListener('keydown', function(e) {
+                if (e.key === ' ' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    e.preventDefault(); e.stopPropagation();
+                    this.executeCommand(['insert', '\\;']);
+                }
+            }, true);
+        });
+
+        // --- BERSIHKAN AKSEN KOSONG (garis, vektor, topi, titik) ---
+        customElements.whenDefined('math-field').then(() => {
+            const mf = document.getElementById('mathFieldEditor');
+            const reKosong = /\\(?:overline|vec|hat|dot|ddot|text)(?:\{\s*(?:\\placeholder(?:\[[^\]]*\])?\{[^{}]*\}\s*)?\}|\s*\\placeholder(?:\[[^\]]*\])?\{[^{}]*\})/g;
+            const hitung = t => (t.match(reKosong) || []).length;
+            const norm = t => (t || '').replace(/\s+/g, '');
+            let sebelum = '', sibuk = false;
+
+            // mode: 'tombol' (Backspace/Delete) atau 'input' (keyboard HP / perubahan apa pun)
+            function bersihkanAksenKosong(mode) {
+                if (sibuk) return;
+                sibuk = true;
+                try {
+                    const latex = mf.getValue('latex');
+                    const adaKosong = hitung(latex);
+                    const menyusut = latex.length < sebelum.length;
+                    if (adaKosong > 0 && ((adaKosong > hitung(sebelum) && menyusut) || (mode === 'tombol' && latex === sebelum))) {
+                        reKosong.lastIndex = 0;
+                        const m = reKosong.exec(latex);
+                        const posLama = mf.position, akhirLama = mf.lastOffset;
+                        const baru = latex.replace(reKosong, '');
+                        mf.setValue(baru, { silenceNotifications: true });
+                        let pos = Math.max(0, Math.min(mf.lastOffset, posLama - (akhirLama - mf.lastOffset)));
+                        const target = norm(baru.slice(0, m.index));
+                        for (const c of [pos, pos + 1, pos - 1, pos + 2, pos - 2]) {
+                            if (c < 0 || c > mf.lastOffset) continue;
+                            try { if (norm(mf.getValue(0, c, 'latex')) === target) { pos = c; break; } } catch (e) {}
+                        }
+                        mf.position = pos;
+                        mf.focus();
+                    }
+                    sebelum = mf.getValue('latex');
+                } catch (e) { console.error(e); }
+                sibuk = false;
+            }
+            mf.addEventListener('keydown', function(e) {
+                if (e.key !== 'Backspace' && e.key !== 'Delete') return;
+                try { sebelum = mf.getValue('latex'); } catch (err) { sebelum = ''; }
+                setTimeout(() => bersihkanAksenKosong('tombol'), 0);
+            }, true);
+            // Keyboard virtual HP tidak selalu mengirim keydown Backspace, jadi juga dicek lewat event input
+            mf.addEventListener('input', function() {
+                setTimeout(() => bersihkanAksenKosong('input'), 0);
+            });
+        });
+
+        // --- PENYESUAIAN EDITOR RUMUS UNTUK HP ---
+        customElements.whenDefined('math-field').then(() => {
+            const mf = document.getElementById('mathFieldEditor');
+            const modal = document.getElementById('mathModal');
+            const toolbar = document.querySelector('.math-simbol-toolbar');
+            // Tombol simbol tidak mencuri fokus dari kotak rumus, sehingga keyboard HP tetap terbuka
+            ['pointerdown', 'mousedown'].forEach(jenis => toolbar.addEventListener(jenis, e => { if (e.target.closest('button')) e.preventDefault(); }));
+            // Saat keyboard HP terbuka, beri ruang di bawah modal agar tombol Batal dan Sisipkan tidak tertutup
+            const aturRuangKeyboard = () => {
+                let tinggi = 0;
+                try { const kb = window.mathVirtualKeyboard; if (kb && kb.visible && kb.boundingRect) tinggi = kb.boundingRect.height; } catch (e) {}
+                if (!tinggi && window.visualViewport) tinggi = Math.max(0, window.innerHeight - window.visualViewport.height);
+                modal.style.paddingBottom = tinggi ? (tinggi + 16) + 'px' : '';
+            };
+            try { window.mathVirtualKeyboard.addEventListener('geometrychange', aturRuangKeyboard); } catch (e) {}
+            if (window.visualViewport) window.visualViewport.addEventListener('resize', aturRuangKeyboard);
+            mf.addEventListener('focus', () => {
+                setTimeout(aturRuangKeyboard, 350);
+                setTimeout(() => mf.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+            });
+        });
+
+        // --- SHORTCUT WorD-i & KanvA-Di ---
+        document.addEventListener('keydown', function(e) {
+            let wordAktif = document.getElementById('formCatatanWord').classList.contains('active')
+                            && document.getElementById('tab-catatan').classList.contains('active');
+            let canvasAktif = document.getElementById('canvasFullscreen').style.display === 'flex';
+            let modalTerbuka = document.getElementById('mathModal').style.display === 'flex'
+                            || document.getElementById('customModal').style.display === 'flex';
+            if (modalTerbuka) return;
+            let k = e.key.toLowerCase();
+
+            if (wordAktif) {
+                if (e.ctrlKey && !e.altKey && !e.shiftKey && ['l','r','j','e'].includes(k)) {
+                    e.preventDefault();
+                    let cmd = {l:'justifyLeft', r:'justifyRight', j:'justifyFull', e:'justifyCenter'}[k];
+                    formatTeks(cmd); return;
+                }
+                if (e.ctrlKey && !e.altKey && !e.shiftKey && k === 'g') { e.preventDefault(); sisipGambarWord(); return; }
+                if (e.altKey && !e.ctrlKey && (e.code === 'Equal' || e.key === '=')) { e.preventDefault(); bukaMathModal('word'); return; }
+            }
+            if (canvasAktif && e.ctrlKey && !e.altKey && !e.shiftKey && k === 'g') { e.preventDefault(); sisipGambarCanvas(); }
+        });
+
+        // --- KEYBOARD NAVIGATION ---
+        document.addEventListener('keydown', function(e) {
+            let loginPg = document.getElementById('loginPage');
+            if (e.key === 'Enter' && loginPg.style.display !== 'none') { masukApp(); return; }
+            
+            let modal = document.getElementById('customModal');
+            let mathModal = document.getElementById('mathModal');
+            if (e.key === 'Enter') {
+                if (modal.style.display === 'flex') {
+                    let btn = document.getElementById('btnConfirmAction');
+                    if(btn) btn.click(); else tutupModal();
+                    return;
+                }
+                if (mathModal.style.display === 'flex') { konfirmasiMathModal(); return; }
+            }
+            
+            if (['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) {
+                let active = document.activeElement;
+                if (active && active.classList.contains('kartu-pilihan')) {
+                    e.preventDefault(); 
+                    let cards = Array.from(active.parentElement.querySelectorAll('.kartu-pilihan'));
+                    let idx = cards.indexOf(active);
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { if (idx < cards.length - 1) cards[idx + 1].focus(); } 
+                    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { if (idx > 0) cards[idx - 1].focus(); }
+                }
+            }
+        });
+        document.querySelectorAll('.kartu-pilihan').forEach(card => {
+            card.addEventListener('keydown', function(e) { if(e.key === 'Enter') this.click(); });
+        });
+
+        // --- AUDIO & MODAL ---
+        document.addEventListener('click', function(e) {
+            if(e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                let sound = document.getElementById('clickSound'); sound.currentTime = 0; sound.play().catch(e => {});
+            }
+        });
+        function tampilkanModal(judul, teks, tipe, aksiConfirm) {
+            document.getElementById('modalTitle').innerText = judul;
+            document.getElementById('modalText').innerText = teks;
+            let btnContainer = document.getElementById('modalActions'); btnContainer.innerHTML = ''; 
+            if (tipe === 'info') {
+                document.getElementById('modalTitle').style.color = 'var(--primary)';
+                btnContainer.innerHTML = `<button class="modal-btn modal-btn-primary" onclick="tutupModal()">Tutup (Enter)</button>`;
+            } else if (tipe === 'konfirmasi') {
+                document.getElementById('modalTitle').style.color = 'var(--accent)';
+                btnContainer.innerHTML = `<button class="modal-btn modal-btn-cancel" onclick="tutupModal()">Batal</button><button class="modal-btn modal-btn-primary" id="btnConfirmAction">Yakin (Enter)</button>`;
+                document.getElementById('btnConfirmAction').onclick = function() { aksiConfirm(); tutupModal(); };
+            }
+            document.getElementById('customModal').style.display = 'flex';
+        }
+        function tutupModal() { document.getElementById('customModal').style.display = 'none'; }
+
+        // --- EDITOR MATEMATIKA ---
+        let targetMathInput = ''; let lastNewtonBox = null;
+        
+        function sisipMath(cmd) {
+            const mf = document.getElementById('mathFieldEditor');
+            mf.executeCommand(['insert', cmd]); mf.focus(); aktifkanKeyboardSentuh();
+        }
+
+        // --- KEYBOARD VIRTUAL UNTUK HP ---
+        const adaLayarSentuh = () => window.matchMedia('(pointer: coarse)').matches;
+        function aktifkanKeyboardSentuh() {
+            if (!adaLayarSentuh()) return;
+            try { if (window.mathVirtualKeyboard) window.mathVirtualKeyboard.show(); } catch (e) { console.error(e); }
+        }
+
+        let savedRange = null;
+        function bukaMathModal(target, newtonBox = null) {
+            targetMathInput = target; lastNewtonBox = newtonBox;
+            savedRange = null;
+            if (target === 'word') {
+                let sel = window.getSelection();
+                if (activeWordEditor && sel.rangeCount > 0 && activeWordEditor.contains(sel.anchorNode)) savedRange = sel.getRangeAt(0).cloneRange();
+            }
+            let mf = document.getElementById('mathFieldEditor');
+            mf.value = ''; 
+            document.getElementById('mathModal').style.paddingBottom = '';
+            document.getElementById('mathModal').style.display = 'flex';
+            
+            mf.focus(); aktifkanKeyboardSentuh();
+            setTimeout(() => { mf.focus(); aktifkanKeyboardSentuh(); }, 120);
+        }
+        
+        function tutupMathModal() { 
+            try {
+                let mf = document.getElementById('mathFieldEditor');
+                mf.blur(); 
+                if(window.mathVirtualKeyboard) window.mathVirtualKeyboard.hide(); 
+            } catch(e) {}
+            
+            document.getElementById('mathModal').style.display = 'none'; 
+            if(targetMathInput === 'canvas') {
+                let overlay = document.getElementById('newtonOverlay');
+                if(overlay) overlay.style.display = 'none';
+            }
+        }
+        
+        function konfirmasiMathModal() {
+            let mf = document.getElementById('mathFieldEditor');
+            let latex = mf.value;
+            try { latex = mf.getValue('latex-expanded'); } catch(e) {}
+            latex = latex.split('\\differentialD').join('\\mathrm{d}')
+                         .split('\\capitalDifferentialD').join('\\mathrm{D}')
+                         .split('\\exponentialE').join('\\mathrm{e}')
+                         .split('\\imaginaryI').join('\\mathrm{i}')
+                         .split('\\imaginaryJ').join('\\mathrm{j}');
+            if(!latex || latex.trim() === '') { tutupMathModal(); return; }
+
+            let mathSize = document.getElementById('mathSizeSelect').value;
+            let imgUrl = `https://latex.codecogs.com/svg.image?\\color{black}${mathSize} ${encodeURIComponent(latex)}`;
+
+            if (targetMathInput === 'word') {
+                if(!activeWordEditor) activeWordEditor = document.querySelector('.wordIsi');
+                if(activeWordEditor) {
+                    let imgTag = `<img src="${imgUrl}" class="math-render" alt="Rumus">`;
+                    activeWordEditor.focus();
+                    let sel = window.getSelection();
+                    if (savedRange) { sel.removeAllRanges(); sel.addRange(savedRange); }
+                    else { let r = document.createRange(); r.selectNodeContents(activeWordEditor); r.collapse(false); sel.removeAllRanges(); sel.addRange(r); }
+                    document.execCommand('insertHTML', false, imgTag + '&nbsp;');
+                    savedRange = null;
+                }
+            } 
+            else if (targetMathInput === 'canvas' && lastNewtonBox) {
+                let img = new Image();
+                img.onload = function() {
+                    ctx.clearRect(lastNewtonBox.x, lastNewtonBox.y, lastNewtonBox.w, lastNewtonBox.h);
+                    ctx.fillStyle = "white"; ctx.fillRect(lastNewtonBox.x, lastNewtonBox.y, lastNewtonBox.w, lastNewtonBox.h);
+                    let ratio = Math.min(lastNewtonBox.w / img.width, lastNewtonBox.h / img.height);
+                    let finalW = img.width * ratio; let finalH = img.height * ratio;
+                    let cx = lastNewtonBox.x + (lastNewtonBox.w - finalW) / 2;
+                    let cy = lastNewtonBox.y + (lastNewtonBox.h - finalH) / 2;
+                    ctx.drawImage(img, cx, cy, finalW, finalH);
+                };
+                img.crossOrigin = 'anonymous';
+                img.onerror = function() { tampilkanModal('Gagal', 'Rumus gagal dimuat, cek koneksi internet.', 'info'); };
+                img.src = imgUrl; 
+                document.getElementById('newtonOverlay').style.display = 'none';
+                setModeAlat('pen'); 
+            }
+            tutupMathModal();
+        }
+
+        // --- SISIP GAMBAR ---
+        function sisipGambarWord() { document.getElementById('wordImageInput').click(); }
+        function prosesGambarWord(input) {
+            if(input.files && input.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let imgTag = `<br><img src="${e.target.result}" style="max-width:100%; border-radius:8px;"><br>`;
+                    if(!activeWordEditor) activeWordEditor = document.querySelector('.wordIsi');
+                    if(activeWordEditor) {
+                        activeWordEditor.focus(); 
+                        document.execCommand('insertHTML', false, imgTag);
+                    }
+                }
+                reader.readAsDataURL(input.files[0]); input.value = ''; 
+            }
+        }
+        function sisipGambarCanvas() { document.getElementById('canvasImageInput').click(); }
+        function prosesGambarCanvas(input) {
+            if(input.files && input.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let img = new Image();
+                    img.onload = function() {
+                        let ratio = Math.min((cvs.width * 0.7) / img.width, (cvs.height * 0.7) / img.height);
+                        let w = img.width * ratio; let h = img.height * ratio;
+                        let cx = (cvs.width - w) / 2; let cy = (cvs.height - h) / 2;
+                        ctx.drawImage(img, cx, cy, w, h);
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]); input.value = ''; 
+            }
+        }
+
+        // --- STATE & LOGIN ---
+        function bacaDataTersimpan(kunci) {
+            try {
+                const data = JSON.parse(localStorage.getItem(kunci) || '[]');
+                return Array.isArray(data) ? data : [];
+            } catch (e) {
+                console.error('Data lokal tidak dapat dibaca:', kunci, e);
+                return [];
+            }
+        }
+
+        let currentUser = localStorage.getItem('notaUser') || '';
+        let dataTugas = bacaDataTersimpan('notaTugas');
+        let dataCatatan = bacaDataTersimpan('notaCatatan');
+
+        // Global state untuk ID Dokumen yang sedang di-edit
+        let editWordId = null;
+        let editCanvasId = null;
+
+        window.onload = () => { if(currentUser !== '') masukAppLangsungan(); };
+        function mintaIzinNotif() { if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); }
+        function masukApp() {
+            let nama = document.getElementById('inputNama').value.trim();
+            if(nama === '') { tampilkanModal('Peringatan', 'Masukkan nama Anda!', 'info'); return; }
+            currentUser = nama; localStorage.setItem('notaUser', currentUser);
+            mintaIzinNotif(); 
+            
+            document.getElementById('loginPage').style.display = 'none';
+            let loading = document.getElementById('loadingScreen');
+            loading.style.display = 'flex';
+            setTimeout(() => {
+                loading.style.display = 'none';
+                tampilkanDashboard();
+            }, 1500);
+        }
+        function masukAppLangsungan() { 
+            mintaIzinNotif(); 
+            document.getElementById('loginPage').style.display = 'none';
+            let loading = document.getElementById('loadingScreen');
+            loading.style.display = 'flex';
+            setTimeout(() => {
+                loading.style.display = 'none';
+                tampilkanDashboard();
+            }, 800);
+        }
+        function gantiNamaUser() { tampilkanModal('Keluar', 'Yakin ingin keluar dan ganti akun?', 'konfirmasi', function() { localStorage.removeItem('notaUser'); location.reload(); }); }
+        function tampilkanDashboard() {
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'none'; document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('displayNamaUser').innerText = currentUser; 
+            document.getElementById('profilNamaLengkap').innerText = currentUser;
+            document.getElementById('profilInisial').innerText = currentUser.charAt(0).toUpperCase();
+            renderAvatar();
+            // Muat ulang arsip tersimpan saat dashboard dibuka agar daftar selalu mengikuti penyimpanan terakhir.
+            dataCatatan = bacaDataTersimpan('notaCatatan');
+            dataTugas = bacaDataTersimpan('notaTugas');
+            renderDaftarPengingat(); updateProfilStats(); renderDaftarCatatan(); renderBeranda();
+        }
+        function toggleTheme() { const htmlEl = document.documentElement; htmlEl.setAttribute('data-theme', htmlEl.getAttribute('data-theme') === 'light' ? 'dark' : 'light'); }
+        function bukaTab(tabId, btnElement) {
+            let tabs = document.getElementsByClassName('tab-content'); for(let i=0; i<tabs.length; i++) tabs[i].classList.remove('active');
+            let btns = document.getElementById('navMenu').getElementsByTagName('button'); for(let i=0; i<btns.length; i++) btns[i].classList.remove('active');
+            document.getElementById(tabId).classList.add('active'); btnElement.classList.add('active');
+            kembaliKePilihanPengingat(); kembaliKePilihanCatatan(); if(tabId === 'tab-profil') updateProfilStats();
+        }
+        
+        function renderBeranda() {
+            let wadahTugas = document.getElementById('berandaTugasContainer');
+            let tugasAktif = dataTugas.filter(t => t.status !== 'selesai').slice(-3).reverse();
+            if(tugasAktif.length === 0) {
+                wadahTugas.innerHTML = '<p style="color:var(--text-muted); font-size:0.9em; margin:0;">Belum ada tugas/jadwal aktif.</p>';
+            } else {
+                wadahTugas.innerHTML = '';
+                tugasAktif.forEach(t => {
+                    wadahTugas.innerHTML += `<div style="padding: 10px 0; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap: 10px; flex-wrap:wrap;">
+                        <span style="font-weight:600; font-size:0.9em; color:var(--text-main);"><span class="${getBadgeClass(t.jenis)}">${t.jenis[0]}</span> ${t.judul}</span>
+                        <span style="font-size:0.8em; color:var(--text-muted); font-weight:600;">${formatTanggal(t.deadlineTarget)}</span>
+                    </div>`;
+                });
+            }
+
+            let wadahCat = document.getElementById('berandaCatatanContainer');
+            let catTerakhir = dataCatatan.slice(-3).reverse();
+            if(catTerakhir.length === 0) {
+                wadahCat.innerHTML = '<p style="color:var(--text-muted); font-size:0.9em; margin:0;">Belum ada catatan yang tersimpan.</p>';
+            } else {
+                wadahCat.innerHTML = '';
+                catTerakhir.forEach(c => {
+                    let icon = c.tipe === 'word' ? '📝' : '🎨';
+                    let color = c.tipe === 'word' ? 'var(--primary)' : 'var(--purple)';
+                    wadahCat.innerHTML += `<div style="padding: 10px 0; border-bottom: 1px solid var(--border);">
+                        <span style="font-weight:600; font-size:1em; color:${color};">${icon} ${c.head}</span><br>
+                        <span style="font-size:0.8em; color:var(--text-muted); font-weight:600;">Subjek: ${c.subjek}</span>
+                    </div>`;
+                });
+            }
+        }
+
+        // --- PENGINGAT ---
+        function bukaFormPengingat(jenis) {
+            document.getElementById('pilihanPengingatUtama').classList.remove('active'); document.getElementById('formPengingatBox').classList.add('active');
+            document.getElementById('jenisPengingatAktif').value = jenis; document.getElementById('judulFormPengingat').innerText = `Buat ${jenis} Baru`;
+        }
+        function kembaliKePilihanPengingat() {
+            document.getElementById('formPengingatBox').classList.remove('active'); document.getElementById('pilihanPengingatUtama').classList.add('active');
+            document.getElementById('namaPengingatBaru').value = ''; document.getElementById('waktuPengingatBaru').value = '';
+        }
+        function simpanPengingatBaru() {
+            let jenis = document.getElementById('jenisPengingatAktif').value; let nama = document.getElementById('namaPengingatBaru').value.trim(); let waktuInput = document.getElementById('waktuPengingatBaru').value;
+            if(nama === '' || waktuInput === '') { tampilkanModal('Gagal', 'Lengkapi form!', 'info'); return; }
+            let tugasBaru = { id: Date.now(), jenis: jenis, judul: nama, dibuat: new Date().toISOString(), deadlineTarget: waktuInput, status: 'pending' };
+            dataTugas.push(tugasBaru); localStorage.setItem('notaTugas', JSON.stringify(dataTugas));
+            tampilkanModal('Berhasil!', `[${jenis}] tersimpan.`, 'info'); kembaliKePilihanPengingat(); renderDaftarPengingat(); renderBeranda();
+        }
+        function tandaiSelesai(id) { let index = dataTugas.findIndex(t => t.id === id); if(index !== -1) { dataTugas[index].status = 'selesai'; localStorage.setItem('notaTugas', JSON.stringify(dataTugas)); renderDaftarPengingat(); updateProfilStats(); renderBeranda(); } }
+        function hapusPengingat(id) { tampilkanModal('Hapus', 'Yakin hapus data ini?', 'konfirmasi', function() { dataTugas = dataTugas.filter(t => t.id !== id); localStorage.setItem('notaTugas', JSON.stringify(dataTugas)); renderDaftarPengingat(); updateProfilStats(); renderBeranda(); }); }
+        function formatTanggal(isoString) { if(!isoString) return "-"; const date = new Date(isoString); return date.toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+        function getBadgeClass(j) { return j==='Jadwal'?'badge badge-jadwal':(j==='Alarm'?'badge badge-alarm':'badge badge-tugas'); }
+        
+        function renderDaftarPengingat() {
+            let wadah = document.getElementById('wadahDaftarTugas'); wadah.innerHTML = '';
+            if (dataTugas.length === 0) {
+                wadah.innerHTML = '<div style="text-align:center; padding: 25px; border: 2px dashed var(--border); border-radius: 8px; color: var(--text-muted); font-weight:600;">📭 Belum ada tugas atau jadwal yang aktif.</div>';
+                return;
+            }
+            [...dataTugas].reverse().forEach(tugas => {
+                let isS = tugas.status === 'selesai'; let div = document.createElement('div'); div.className = `task-item ${isS ? 'selesai' : ''}`;
+                div.innerHTML = `<div class="task-info"><h3 style="text-decoration: ${isS ? 'line-through' : 'none'};"><span class="${getBadgeClass(tugas.jenis)}">${tugas.jenis.toUpperCase()}</span> ${tugas.judul}</h3><p style="color: var(--accent);"><strong>Waktu:</strong> ${formatTanggal(tugas.deadlineTarget)}</p></div><div>${!isS ? `<button class="btn-success" onclick="tandaiSelesai(${tugas.id})">✔ Tuntas</button>` : `<span style="font-weight:bold; color: var(--success); margin-right:10px;">SELESAI</span>`}<button class="btn-danger" onclick="hapusPengingat(${tugas.id})">X</button></div>`;
+                wadah.appendChild(div);
+            });
+        }
+        function updateProfilStats() { 
+            document.getElementById('statTugas').innerText = dataTugas.filter(t => t.jenis === 'Tugas').length; 
+            document.getElementById('statJadwal').innerText = dataTugas.filter(t => t.jenis === 'Jadwal').length; 
+            document.getElementById('statAlarm').innerText = dataTugas.filter(t => t.jenis === 'Alarm').length; 
+            if(document.getElementById('statCatatan')) document.getElementById('statCatatan').innerText = dataCatatan.length;
+        }
+
+        // --- CATATAN (WorD-i & KanvA-Di) ---
+        function bukaFormCatatan(mode) {
+            document.getElementById('pilihanCatatanUtama').classList.remove('active');
+            document.getElementById('formCatatanWord').classList.remove('active');
+            document.getElementById('formCatatanCanvas').classList.remove('active');
+            
+            if(mode === 'word') {
+                // Tombol WorD-i selalu membuka lembar BARU.
+                // Dokumen lama dibuka melalui tombol Edit pada Arsip Ruang Kerja.
+                resetWordEditor();
+                document.getElementById('formCatatanWord').classList.add('active');
+            } else if (mode === 'word_edit') {
+                document.getElementById('formCatatanWord').classList.add('active');
+            } else if (mode === 'canvas') {
+                // Tombol KanvA-Di selalu membuka kanvas BARU.
+                // Kanvas lama dibuka melalui tombol Edit pada Arsip Ruang Kerja.
+                resetCanvasEditor();
+                document.getElementById('formCatatanCanvas').classList.add('active');
+            } else if (mode === 'canvas_edit') {
+                document.getElementById('formCatatanCanvas').classList.add('active'); 
+            }
+        }
+        function kembaliKePilihanCatatan() { document.getElementById('formCatatanWord').classList.remove('active'); document.getElementById('formCatatanCanvas').classList.remove('active'); document.getElementById('pilihanCatatanUtama').classList.add('active'); }
+
+        // WorD-i Reset & Multi-panel
+        function resetWordEditor() {
+            let container = document.getElementById('wordPanelContainer');
+            container.innerHTML = `
+                <div class="word-panel" style="flex: 1; min-width: 350px; background: var(--bg-color); padding: 15px; border-radius: 0 0 6px 6px; border: 2px solid var(--border); border-top: none; position: relative;">
+                    <div class="form-group"><input type="text" class="wordHead" placeholder="Judul Dokumen"></div>
+                    <div class="form-group"><input type="text" class="wordSubjek" placeholder="Subjek / Keterangan"></div>
+                    <div class="rich-editor wordIsi" contenteditable="true" placeholder="Mulai merangkai catatan di sini..." style="border: 1px solid var(--border); border-radius: 4px; min-height: 250px; background: var(--card-bg);"></div>
+                </div>
+            `;
+            editWordId = null;
+            activeWordEditor = container.querySelector('.wordIsi');
+        }
+
+        function tambahKolomWord() {
+            let container = document.getElementById('wordPanelContainer');
+            let panel = document.createElement('div');
+            panel.className = 'word-panel';
+            panel.style = 'flex: 1; min-width: 350px; background: var(--bg-color); padding: 15px; border-radius: 0 0 6px 6px; border: 2px solid var(--border); border-top: none; position: relative;';
+            panel.innerHTML = `
+                <button style="position:absolute; right:15px; top:15px; background:var(--danger); color:white; padding:4px 8px; border-radius:4px; font-size:0.8em; font-weight:bold; cursor:pointer;" onclick="this.parentElement.remove()">X Hapus</button>
+                <div class="form-group" style="padding-right: 70px;"><input type="text" class="wordHead" placeholder="Judul Dokumen"></div>
+                <div class="form-group"><input type="text" class="wordSubjek" placeholder="Subjek / Keterangan"></div>
+                <div class="rich-editor wordIsi" contenteditable="true" placeholder="Mulai merangkai catatan di sini..." style="border: 1px solid var(--border); border-radius:4px; min-height: 250px; background: var(--card-bg);"></div>
+            `;
+            container.appendChild(panel);
+        }
+
+        let activeWordEditor = null;
+        document.addEventListener('focusin', function(e) {
+            if(e.target && e.target.classList.contains('wordIsi')) {
+                activeWordEditor = e.target;
+                cekFormatAktif();
+            }
+        });
+        document.addEventListener('keyup', function(e) { if(e.target && e.target.classList.contains('wordIsi')) cekFormatAktif(); });
+        document.addEventListener('mouseup', function(e) { if(e.target && e.target.classList.contains('wordIsi')) cekFormatAktif(); });
+
+        function cekFormatAktif() {
+            if(!activeWordEditor) return;
+            ['bold', 'italic', 'underline'].forEach(cmd => { let state = document.queryCommandState(cmd); let btn = document.getElementById('btn-' + cmd); if(btn) { if(state) btn.classList.add('active'); else btn.classList.remove('active'); } });
+        }
+        function formatTeks(cmd, val = null) { 
+            if(!activeWordEditor) {
+                let firstEditor = document.querySelector('.wordIsi');
+                if(firstEditor) activeWordEditor = firstEditor;
+                else return;
+            }
+            document.execCommand(cmd, false, val); 
+            cekFormatAktif(); 
+            activeWordEditor.focus(); 
+        }
+        function formatListStyle(style) {
+            if(!activeWordEditor) return;
+            activeWordEditor.focus();
+            document.execCommand('insertOrderedList'); let node = window.getSelection().anchorNode;
+            while (node && node.nodeName !== 'OL' && node.nodeName !== 'DIV') { node = node.parentNode; }
+            if (node && node.nodeName === 'OL') { node.style.listStyleType = style; if(style !== 'decimal') node.style.fontWeight = 'bold'; }
+        }
+        
+        function editCatatanWord(id) {
+            let cat = dataCatatan.find(c => c.id === id);
+            if(!cat) return;
+            editWordId = id;
+            let container = document.getElementById('wordPanelContainer');
+            container.innerHTML = `
+                <div class="word-panel" style="flex: 1; min-width: 350px; background: var(--bg-color); padding: 15px; border-radius: 0 0 6px 6px; border: 2px solid var(--border); border-top: none; position: relative;">
+                    <div class="form-group"><input type="text" class="wordHead" placeholder="Judul Dokumen" value="${cat.head}"></div>
+                    <div class="form-group"><input type="text" class="wordSubjek" placeholder="Subjek / Keterangan" value="${cat.subjek}"></div>
+                    <div class="rich-editor wordIsi" contenteditable="true" placeholder="Mulai merangkai catatan di sini..." style="border: 1px solid var(--border); border-radius: 4px; min-height: 250px; background: var(--card-bg);"></div>
+                </div>
+            `;
+            container.querySelector('.wordIsi').innerHTML = cat.konten;
+            activeWordEditor = container.querySelector('.wordIsi');
+            bukaFormCatatan('word_edit');
+        }
+
+        function simpanCatatanWord() {
+            let panels = document.querySelectorAll('.word-panel');
+            let saved = 0;
+            
+            panels.forEach((panel, index) => {
+                let head = panel.querySelector('.wordHead').value.trim() || 'Dokumen WorD-i';
+                let subjek = panel.querySelector('.wordSubjek').value.trim() || '-';
+                let editor = panel.querySelector('.wordIsi');
+                if(editor.innerText.trim() !== '' || editor.innerHTML.includes('<img')) {
+                    if (index === 0 && editWordId) {
+                        let idx = dataCatatan.findIndex(c => c.id === editWordId);
+                        if (idx !== -1) {
+                            dataCatatan[idx].head = head;
+                            dataCatatan[idx].subjek = subjek;
+                            dataCatatan[idx].konten = editor.innerHTML;
+                            dataCatatan[idx].waktu = new Date().toISOString();
+                        }
+                    } else {
+                        let cat = { id: Date.now() + Math.random(), tipe: 'word', head: head, subjek: subjek, konten: editor.innerHTML, waktu: new Date().toISOString() };
+                        dataCatatan.push(cat);
+                    }
+                    saved++;
+                }
+            });
+
+            if(saved > 0) {
+                localStorage.setItem('notaCatatan', JSON.stringify(dataCatatan));
+                tampilkanModal('Berhasil', saved + ' Dokumen tersimpan.', 'info');
+                resetWordEditor(); // Bersihkan form setelah disave
+                kembaliKePilihanCatatan();
+                renderDaftarCatatan();
+                renderBeranda();
+                updateProfilStats();
+            } else {
+                tampilkanModal('Gagal', 'Semua dokumen kosong!', 'info');
+            }
+        }
+
+        // KanvA-Di 
+        let sesiLayers = [""]; let layerAktif = 0;
+        const cvs = document.getElementById('drawingCanvas'); const ctx = cvs.getContext('2d');
+        const toolbarCvs = document.getElementById('floatingToolbar'); const overlay = document.getElementById('newtonOverlay');
+        let isDrawing = false; let alatAktif = 'pen'; let currentColor = '#000000'; let ketebalan = 3; let startX, startY; 
+
+        function resetCanvasEditor() {
+            document.getElementById('canvasHead').value = '';
+            document.getElementById('canvasSubjek').value = '';
+            sesiLayers = [""];
+            layerAktif = 0;
+            document.getElementById('previewCanvasArea').style.display = 'none';
+            editCanvasId = null;
+        }
+
+        function editCatatanCanvas(id) {
+            let cat = dataCatatan.find(c => c.id === id);
+            if(!cat) return;
+            editCanvasId = id;
+            document.getElementById('canvasHead').value = cat.head;
+            document.getElementById('canvasSubjek').value = cat.subjek;
+            sesiLayers = [...cat.konten];
+            layerAktif = sesiLayers.length > 0 ? sesiLayers.length - 1 : 0;
+            
+            document.getElementById('previewCanvasArea').style.display = 'block';
+            let wadahPrev = document.getElementById('previewLayers'); 
+            wadahPrev.innerHTML = '';
+            sesiLayers.forEach((dataUrl, idx) => { 
+                if(dataUrl.length > 10) wadahPrev.innerHTML += `<div><p style="font-size:0.7em;margin:0;text-align:center;">Hal ${idx+1}</p><img src="${dataUrl}" class="layer-preview"></div>`; 
+            });
+            bukaFormCatatan('canvas_edit');
+        }
+
+        function ambilDataCanvas() {
+            try { return cvs.toDataURL("image/jpeg", 1.0); }
+            catch(e) { console.error(e); return sesiLayers[layerAktif] || ""; }
+        }
+        function toggleCanvasMenu() { toolbarCvs.classList.toggle('hidden'); }
+        function inisialisasiCanvasRatio() { cvs.width = window.innerWidth * 1.5; cvs.height = window.innerHeight * 1.5; isiPutih(); }
+        function isiPutih() { ctx.fillStyle = "white"; ctx.fillRect(0, 0, cvs.width, cvs.height); }
+        function bukaLayarPenuhCanvas() {
+            document.getElementById('canvasFullscreen').style.display = 'flex'; toolbarCvs.classList.remove('hidden'); 
+            if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e=>{});
+            inisialisasiCanvasRatio(); muatLayerKeCanvas(layerAktif); updateUI_Layer();
+        }
+        function keluarLayarPenuh() {
+            sesiLayers[layerAktif] = ambilDataCanvas(); document.getElementById('canvasFullscreen').style.display = 'none';
+            if (document.fullscreenElement) document.exitFullscreen().catch(e=>{});
+            document.getElementById('previewCanvasArea').style.display = 'block'; let wadahPrev = document.getElementById('previewLayers'); wadahPrev.innerHTML = '';
+            sesiLayers.forEach((dataUrl, idx) => { if(dataUrl.length > 10) wadahPrev.innerHTML += `<div><p style="font-size:0.7em;margin:0;text-align:center;">Hal ${idx+1}</p><img src="${dataUrl}" class="layer-preview"></div>`; });
+        }
+        function setModeAlat(mode) {
+            alatAktif = mode; ['pen', 'pencil', 'brush', 'newton', 'eraser'].forEach(a => document.getElementById('btn'+a.charAt(0).toUpperCase() + a.slice(1)).classList.remove('active'));
+            document.getElementById('btn'+mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active'); updateWarnaTinta();
+        }
+        function updateUkuranAlat() { ketebalan = document.getElementById('ukuranAlat').value; }
+        function updateWarnaTinta() { if(alatAktif !== 'eraser') currentColor = document.getElementById('warnaPena').value; }
+
+        function navigasiLayer(arah) { sesiLayers[layerAktif] = ambilDataCanvas(); let target = layerAktif + arah; if(target >= 0 && target < sesiLayers.length) { layerAktif = target; muatLayerKeCanvas(layerAktif); updateUI_Layer(); } }
+        function tambahLayerBaru() { sesiLayers[layerAktif] = ambilDataCanvas(); sesiLayers.push(""); layerAktif = sesiLayers.length - 1; isiPutih(); updateUI_Layer(); }
+        function muatLayerKeCanvas(idx) { isiPutih(); if(sesiLayers[idx].length > 10) { let img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = sesiLayers[idx]; } }
+        function updateUI_Layer() { document.getElementById('infoLayer').innerText = `${layerAktif + 1}/${sesiLayers.length}`; }
+
+        function getKoordinat(evt) {
+            let rect = cvs.getBoundingClientRect(); let scaleX = cvs.width / rect.width; let scaleY = cvs.height / rect.height;
+            let cX = evt.clientX || (evt.touches && evt.touches[0] ? evt.touches[0].clientX : 0); let cY = evt.clientY || (evt.touches && evt.touches[0] ? evt.touches[0].clientY : 0);
+            return { x: (cX - rect.left) * scaleX, y: (cY - rect.top) * scaleY, rawX: cX, rawY: cY };
+        }
+
+        function startDraw(e) { 
+            if(e.target !== cvs) return;
+            isDrawing = true; let p = getKoordinat(e);
+            if(alatAktif === 'newton') { startX = p; overlay.style.display = 'block'; overlay.style.left = startX.rawX + 'px'; overlay.style.top = startX.rawY + 'px'; overlay.style.width = '0px'; overlay.style.height = '0px';
+            } else { ctx.beginPath(); ctx.moveTo(p.x, p.y); }
+            if(e.type === 'touchstart') e.preventDefault(); 
+        }
+
+        function onDraw(e) {
+            if(!isDrawing) return; let p = getKoordinat(e);
+            if(alatAktif === 'newton') {
+                let width = p.rawX - startX.rawX; let height = p.rawY - startX.rawY; overlay.style.width = Math.abs(width) + 'px'; overlay.style.height = Math.abs(height) + 'px';
+                overlay.style.left = (width < 0 ? p.rawX : startX.rawX) + 'px'; overlay.style.top = (height < 0 ? p.rawY : startX.rawY) + 'px';
+            } else {
+                ctx.lineTo(p.x, p.y);
+                if (alatAktif === 'eraser') { ctx.strokeStyle = "white"; ctx.globalAlpha = 1.0; ctx.shadowBlur = 0; } 
+                else if (alatAktif === 'pencil') { ctx.strokeStyle = currentColor; ctx.globalAlpha = 0.3; ctx.shadowBlur = 0; } 
+                else if (alatAktif === 'brush') { ctx.strokeStyle = currentColor; ctx.globalAlpha = 0.7; ctx.shadowColor = currentColor; ctx.shadowBlur = ketebalan; } 
+                else { ctx.strokeStyle = currentColor; ctx.globalAlpha = 1.0; ctx.shadowBlur = 0; }
+                ctx.lineWidth = ketebalan; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+            }
+            if(e.type === 'touchmove') e.preventDefault();
+        }
+
+        function endDraw(e) { 
+            if(!isDrawing) return; isDrawing = false; 
+            if(alatAktif === 'newton') {
+                let rect = overlay.getBoundingClientRect(); let cvsRect = cvs.getBoundingClientRect();
+                let scaleX = cvs.width / cvsRect.width; let scaleY = cvs.height / cvsRect.height;
+                let w = rect.width * scaleX; let h = rect.height * scaleY;
+                
+                if(w < 20 || h < 20) { overlay.style.display = 'none'; return; }
+                
+                let boxData = { x: (rect.left - cvsRect.left) * scaleX, y: (rect.top - cvsRect.top) * scaleY, w: w, h: h };
+                bukaMathModal('canvas', boxData);
+            }
+        }
+        cvs.addEventListener('mousedown', startDraw); cvs.addEventListener('mousemove', onDraw); window.addEventListener('mouseup', endDraw);
+        cvs.addEventListener('touchstart', startDraw, {passive: false}); cvs.addEventListener('touchmove', onDraw, {passive: false}); window.addEventListener('touchend', endDraw);
+
+        function simpanCatatanCanvas() {
+            let head = document.getElementById('canvasHead').value.trim() || 'KanvA-Di'; let subjek = document.getElementById('canvasSubjek').value.trim() || '-';
+            let fixLayers = sesiLayers.filter(s => s.length > 10); if(fixLayers.length === 0) { tampilkanModal('Gagal', 'Kanvas kosong!', 'info'); return; }
+            
+            if (editCanvasId) {
+                let idx = dataCatatan.findIndex(c => c.id === editCanvasId);
+                if (idx !== -1) {
+                    dataCatatan[idx].head = head;
+                    dataCatatan[idx].subjek = subjek;
+                    dataCatatan[idx].konten = fixLayers;
+                    dataCatatan[idx].waktu = new Date().toISOString();
+                }
+            } else {
+                let cat = { id: Date.now(), tipe: 'canvas', head: head, subjek: subjek, konten: fixLayers, waktu: new Date().toISOString() };
+                dataCatatan.push(cat);
+            }
+
+            localStorage.setItem('notaCatatan', JSON.stringify(dataCatatan)); 
+            tampilkanModal('Berhasil', 'Arsip kanvas tersimpan.', 'info'); 
+            resetCanvasEditor(); // Bersihkan form
+            kembaliKePilihanCatatan(); 
+            renderDaftarCatatan(); 
+            renderBeranda();
+            updateProfilStats();
+        }
+
+        let filterArsipAktif = 'all';
+        function bukaArsipDanFilter(tipe) {
+            filterArsipCatatan(tipe);
+            document.getElementById('judulArsipRuangKerja').scrollIntoView({behavior:'smooth', block:'start'});
+            if (!dataCatatan.some(c => c.tipe === tipe)) {
+                tampilkanModal('Arsip Kosong', 'Belum ada dokumen ' + (tipe === 'word' ? 'WorD-i' : 'KanvA-Di') + ' yang tersimpan di penyimpanan browser ini.', 'info');
+            }
+        }
+        function filterArsipCatatan(tipe) {
+            filterArsipAktif = tipe;
+            renderDaftarCatatan();
+        }
+
+        function renderDaftarCatatan() {
+            let wadah = document.getElementById('wadahCatatan'); wadah.innerHTML = '';
+            
+            if (dataCatatan.length === 0) {
+                wadah.innerHTML = '<div style="text-align:center; padding: 25px; border: 2px dashed var(--border); border-radius: 8px; color: var(--text-muted); font-weight:600;">📭 Belum ada arsip ruang kerja yang tersimpan.</div>';
+                return;
+            }
+
+            let daftarTampil = [...dataCatatan].filter(cat => filterArsipAktif === 'all' || cat.tipe === filterArsipAktif).reverse();
+            if (daftarTampil.length === 0) {
+                wadah.innerHTML = '<div style="text-align:center;padding:18px;color:var(--text-muted);border:1px dashed var(--border);border-radius:8px;">Tidak ada arsip pada kategori ini. Pilih Semua untuk melihat seluruh arsip.</div>';
+                return;
+            }
+            daftarTampil.forEach(cat => {
+                let div = document.createElement('div'); div.className = 'catatan-item'; let btnHtml = '', kontenHtml = '';
+                if(cat.tipe === 'word') {
+                    btnHtml = `<button class="btn-eksport" style="background:var(--warning);" onclick="editCatatanWord(${cat.id})">✏️ Edit</button> <button class="btn-eksport" style="background:var(--primary);" onclick="eksporWord(${cat.id})">⬇ Word</button> <button class="btn-eksport" onclick="eksporPDFTeks(${cat.id})">⬇ PDF</button>`; 
+                    kontenHtml = `<div class="catatan-isi-box">${cat.konten}</div>`;
+                } else {
+                    btnHtml = `<button class="btn-eksport" style="background:var(--warning);" onclick="editCatatanCanvas(${cat.id})">✏️ Edit</button> <button class="btn-eksport" onclick="eksporCanvasBundlePDF(${cat.id})">⬇ Bundle PDF</button>`; let imgHtml = '';
+                    cat.konten.forEach((img, i) => { imgHtml += `<div style="display:inline-block; margin-right:10px; text-align:center;"><img src="${img}" class="layer-preview"></div>`; });
+                    kontenHtml = `<div class="catatan-isi-box" style="white-space:nowrap;">${imgHtml}</div>`;
+                }
+                div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+                        <div><h3 style="color: ${cat.tipe==='word'?'var(--primary)':'var(--purple)'};">${cat.head}</h3>
+                        <span style="font-size:0.8em; font-weight:bold; color:var(--text-muted);">Subjek: ${cat.subjek}</span></div>
+                        <div>${btnHtml}<button class="btn-danger" style="padding:4px 8px;" onclick="hapusCatatan(${cat.id})">X</button></div>
+                    </div>${kontenHtml}`;
+                wadah.appendChild(div);
+            });
+        }
+        function hapusCatatan(id) { tampilkanModal('Hapus', 'Yakin menghapus ruang kerja ini?', 'konfirmasi', function() { dataCatatan = dataCatatan.filter(c => c.id !== id); localStorage.setItem('notaCatatan', JSON.stringify(dataCatatan)); renderDaftarCatatan(); renderBeranda(); updateProfilStats(); }); }
+        
+        function eksporWord(id) {
+            let cat = dataCatatan.find(c => c.id === id);
+            if(!cat) return;
+            let header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>" + cat.head + "</title></head><body>";
+            let footer = "</body></html>";
+            let sourceHTML = header + "<h2>" + cat.head + "</h2><p><strong>Subjek:</strong> " + cat.subjek + "</p><hr><div>" + cat.konten + "</div>" + footer;
+            let source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+            let fileDownload = document.createElement("a");
+            document.body.appendChild(fileDownload);
+            fileDownload.href = source;
+            fileDownload.download = (cat.head || 'Dokumen') + '.doc';
+            fileDownload.click();
+            document.body.removeChild(fileDownload);
+        }
+
+        function eksporPDFTeks(id) { let cat = dataCatatan.find(c => c.id === id); let area = document.getElementById('printArea'); area.innerHTML = `<h2>${cat.head}</h2><p>Subjek: ${cat.subjek}</p><hr><div>${cat.konten}</div>`; area.style.display = 'block'; window.print(); area.style.display = 'none'; }
+        
+        function eksporCanvasBundlePDF(id) {
+            let cat = dataCatatan.find(c => c.id === id); if(!window.jspdf) return; const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            cat.konten.forEach((imgData, index) => {
+                if(index > 0) pdf.addPage(); let props = pdf.getImageProperties(imgData); let pdfWidth = pdf.internal.pageSize.getWidth(); let pdfHeight = (props.height * pdfWidth) / props.width; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            }); pdf.save(`${cat.head}_Bundle.pdf`);
+        }
+
+        // --- FOTO, MUSIK & SUARA KLIK (disimpan di browser, ikut tertanam saat unduh) ---
+        const FOTO_DEFAULT = document.getElementById('fotoPengembang').getAttribute('src');
+        const KLIK_DEFAULT = 'click.mp3';
+        let urlMediaAktif = { foto: null, musik: null, klik: null };
+
+        function bukaMediaDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open('notaMedia', 1);
+                req.onupgradeneeded = () => req.result.createObjectStore('media');
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+        async function simpanMedia(kunci, nilai) {
+            const db = await bukaMediaDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction('media', 'readwrite');
+                if (nilai) tx.objectStore('media').put(nilai, kunci); else tx.objectStore('media').delete(kunci);
+                tx.oncomplete = () => { db.close(); resolve(); };
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+        async function ambilBlobMedia(kunci) {
+            try {
+                const db = await bukaMediaDB();
+                return await new Promise((resolve, reject) => {
+                    const req = db.transaction('media').objectStore('media').get(kunci);
+                    req.onsuccess = () => { db.close(); resolve(req.result || null); };
+                    req.onerror = () => reject(req.error);
+                });
+            } catch (e) { console.error(e); return null; }
+        }
+        function bacaSebagaiDataURL(blob) {
+            return new Promise((resolve, reject) => {
+                const r = new FileReader();
+                r.onload = () => resolve(r.result);
+                r.onerror = () => reject(r.error);
+                r.readAsDataURL(blob);
+            });
+        }
+        async function dataURLMedia(kunci) {
+            const blob = await ambilBlobMedia(kunci);
+            if (blob) return bacaSebagaiDataURL(blob);
+            return (window.NA_EMBED && window.NA_EMBED[kunci]) || null;
+        }
+        async function ambilDataURLDariFile(url) {
+            try { const r = await fetch(url); if (!r.ok) return null; return await bacaSebagaiDataURL(await r.blob()); }
+            catch (e) { return null; }
+        }
+
+        async function muatMediaAktif() {
+            const emb = window.NA_EMBED || {};
+            for (const k of ['foto', 'musik', 'klik']) {
+                const blob = await ambilBlobMedia(k);
+                if (urlMediaAktif[k] && urlMediaAktif[k].startsWith('blob:')) URL.revokeObjectURL(urlMediaAktif[k]);
+                urlMediaAktif[k] = blob ? URL.createObjectURL(blob) : (emb[k] || null);
+            }
+            document.getElementById('clickSound').src = urlMediaAktif.klik || KLIK_DEFAULT;
+            const musik = document.getElementById('musikLatar');
+            musik.pause();
+            if (urlMediaAktif.musik) musik.src = urlMediaAktif.musik; else musik.removeAttribute('src');
+            musik.load();
+            document.getElementById('fotoPengembang').src = urlMediaAktif.foto || FOTO_DEFAULT;
+            renderAvatar();
+            perbaruiPanelMedia();
+        }
+        function renderAvatar() {
+            const el = document.getElementById('profilInisial');
+            if (!el) return;
+            if (urlMediaAktif.foto) el.innerHTML = `<img src="${urlMediaAktif.foto}" alt="Foto profil" style="width:100%; height:100%; object-fit:cover; border-radius:50%; display:block;">`;
+            else if (currentUser) el.innerText = currentUser.charAt(0).toUpperCase();
+        }
+        function perbaruiPanelMedia() {
+            const isi = (id, teks) => { const el = document.getElementById(id); if (el) el.textContent = teks; };
+            isi('statusFoto', urlMediaAktif.foto ? 'Terpasang (foto kamu)' : 'Memakai foto bawaan');
+            isi('statusMusik', urlMediaAktif.musik ? 'Terpasang' : 'Belum ada musik');
+            isi('statusKlik', urlMediaAktif.klik ? 'Terpasang (suara kamu)' : 'Memakai suara bawaan (click.mp3)');
+            perbaruiTombolMusik();
+        }
+        function perbaruiTombolMusik() {
+            const m = document.getElementById('musikLatar'); const b = document.getElementById('btnMusikToggle');
+            if (b && m) b.textContent = m.paused ? '▶ Putar' : '⏸ Jeda';
+        }
+        function toggleMusik() {
+            const m = document.getElementById('musikLatar');
+            if (!urlMediaAktif.musik) { tampilkanModal('Belum Ada Musik', 'Pasang file musik terlebih dahulu.', 'info'); return; }
+            if (m.paused) m.play().catch(() => tampilkanModal('Gagal', 'Musik tidak bisa diputar di browser ini.', 'info'));
+            else m.pause();
+        }
+        async function unggahMedia(input, kunci) {
+            const file = input.files && input.files[0];
+            input.value = '';
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) { tampilkanModal('File Terlalu Besar', 'Ukuran maksimal 10 MB.', 'info'); return; }
+            try {
+                await simpanMedia(kunci, file);
+                await muatMediaAktif();
+                tampilkanModal('Berhasil', 'Tersimpan. Unduh ulang aplikasi agar ikut terbawa ke HP.', 'info');
+            } catch (e) {
+                console.error(e);
+                tampilkanModal('Gagal', 'Browser ini tidak dapat menyimpan file media.', 'info');
+            }
+        }
+        async function hapusMediaUser(kunci) {
+            try { await simpanMedia(kunci, null); await muatMediaAktif(); }
+            catch (e) { console.error(e); }
+        }
+
+        // --- UNDUH APLIKASI SEBAGAI SATU FILE HTML (untuk HP) ---
+        async function unduhAplikasiHTML() {
+            try {
+                const embed = {};
+                for (const k of ['foto', 'musik', 'klik']) {
+                    const d = await dataURLMedia(k);
+                    if (d) embed[k] = d;
+                }
+                if (!embed.klik) { const d = await ambilDataURLDariFile(KLIK_DEFAULT); if (d) embed.klik = d; }
+                if (!embed.foto) { const d = await ambilDataURLDariFile(FOTO_DEFAULT); if (d) embed.foto = d; }
+
+                // Salinan halaman dengan keadaan sementara dibersihkan (modal, pratinjau, URL blob)
+                const salin = document.documentElement.cloneNode(true);
+                const cari = id => salin.querySelector('#' + id);
+                ['customModal', 'mathModal', 'loadingScreen', 'canvasFullscreen', 'mainApp'].forEach(id => { const el = cari(id); if (el) el.style.display = 'none'; });
+                const login = cari('loginPage'); if (login) login.style.display = '';
+                ['wordPanelContainer', 'previewLayers', 'berandaTugasContainer', 'berandaCatatanContainer', 'wadahDaftarTugas', 'wadahCatatan', 'printArea', 'profilInisial'].forEach(id => { const el = cari(id); if (el) el.innerHTML = ''; });
+                const pratinjau = cari('previewCanvasArea'); if (pratinjau) pratinjau.style.display = 'none';
+                salin.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+                cari('tab-info').classList.add('active');
+                salin.querySelectorAll('#navMenu button').forEach((b, i) => b.classList.toggle('active', i === 0));
+                salin.querySelectorAll('.sub-view').forEach(el => el.classList.remove('active'));
+                cari('pilihanPengingatUtama').classList.add('active');
+                cari('pilihanCatatanUtama').classList.add('active');
+                cari('clickSound').setAttribute('src', embed.klik || KLIK_DEFAULT);
+                cari('musikLatar').removeAttribute('src');
+                cari('fotoPengembang').setAttribute('src', embed.foto || FOTO_DEFAULT);
+
+                // Media ditanam sebagai data di dalam file (diproses saat halaman dibuka)
+                const lama = salin.querySelector('#na-embed');
+                const skrip = salin.ownerDocument.createElement('script');
+                skrip.id = 'na-embed';
+                skrip.textContent = 'window.NA_EMBED = ' + JSON.stringify(embed).replace(/<\//g, '<\\/') + ';';
+                if (lama) lama.replaceWith(skrip); else salin.querySelector('head').appendChild(skrip);
+
+                const html = '<!DOCTYPE html>\n' + salin.outerHTML;
+                const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+                const file = new File([blob], 'NotA-di.html', { type: 'text/html' });
+                if (adaLayarSentuh() && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try { await navigator.share({ files: [file], title: 'NotA-di' }); return; }
+                    catch (e) { if (e && e.name === 'AbortError') return; }
+                }
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'NotA-di.html';
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 4000);
+            } catch (e) {
+                console.error(e);
+                tampilkanModal('Gagal', 'File tidak dapat dibuat: ' + e.message, 'info');
+            }
+        }
+
+        // Inisialisasi media & pantau status musik
+        document.getElementById('musikLatar').addEventListener('play', perbaruiTombolMusik);
+        document.getElementById('musikLatar').addEventListener('pause', perbaruiTombolMusik);
+        window.addEventListener('load', () => { muatMediaAktif(); });
+
+        setInterval(function() {
+            if ("Notification" in window && Notification.permission !== "granted") return;
+            let wkt = new Date().getTime(); 
+            for (let i = 0; i < dataTugas.length; i++) {
+                if (dataTugas[i].status === 'pending') {
+                    let sisa = new Date(dataTugas[i].deadlineTarget).getTime() - wkt; let t = false; let msg = "";
+                    if (sisa > 0 && sisa <= 86400000 && !dataTugas[i].notif1D) { msg = "1 Hari Lagi"; dataTugas[i].notif1D = t = true; }
+                    else if (sisa > 0 && sisa <= 43200000 && !dataTugas[i].notif12H) { msg = "12 Jam Lagi"; dataTugas[i].notif12H = t = true; }
+                    else if (sisa > 0 && sisa <= 3600000 && !dataTugas[i].notif1H) { msg = "1 Jam Lagi"; dataTugas[i].notif1H = t = true; }
+                    else if (sisa > 0 && sisa <= 1800000 && !dataTugas[i].notif30M) { msg = "30 Menit Lagi"; dataTugas[i].notif30M = t = true; }
+                    else if (sisa <= 0 && !dataTugas[i].notifPas) { msg = "WAKTU HABIS / DIMULAI!"; dataTugas[i].notifPas = t = true; }
+                    if (t) {
+                        localStorage.setItem('notaTugas', JSON.stringify(dataTugas)); let fMsg = `[${dataTugas[i].jenis}] ${dataTugas[i].judul} - ${msg}`;
+                        if ("Notification" in window && Notification.permission === "granted") new Notification("NotA-di!", { body: fMsg, icon: "https://cdn-icons-png.flaticon.com/512/1827/1827370.png" });
+                    }
+                }
+            }
+        }, 10000); 
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(e => console.error(e)));
+        }
+    </script>
+</body>
+</html>
